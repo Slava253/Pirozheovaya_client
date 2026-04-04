@@ -73,7 +73,6 @@
         button:hover { background: #3a8bb8; transform: translateY(-2px); }
         
         .error { color: #ff8888; margin-top: 15px; font-size: 14px; }
-        .success { color: #88ff88; margin-top: 15px; }
         
         .code-display {
             background: #0e1f2c;
@@ -109,6 +108,22 @@
         .status-on { background: #2e7d5e; }
         .status-off { background: #8b6b2c; }
         
+        /* Стили для главного экрана учителя */
+        .teacher-main {
+            display: none;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .teacher-code-card {
+            background: rgba(19, 33, 46, 0.95);
+            border-radius: 28px;
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #2c6e8f;
+        }
+        
         @media (max-width: 700px) {
             .video-grid { flex-direction: column; }
             .btn { padding: 8px 16px; font-size: 12px; }
@@ -118,14 +133,14 @@
 </head>
 <body>
 
-<!-- ========== ВЫБОР РОЛИ ========== -->
+<!-- ========== ЭКРАН ВЫБОРА РОЛИ (ПЕРВЫЙ ЭКРАН) ========== -->
 <div id="roleScreen" class="card">
     <h2>📚 Репетитор</h2>
     <button id="chooseTeacherBtn" style="background: #1f6e8c;">👨‍🏫 Я учитель</button>
     <button id="chooseStudentBtn" style="background: #2a7f6e; margin-top: 15px;">👩‍🎓 Я ученик</button>
 </div>
 
-<!-- ========== ВХОД УЧИТЕЛЯ ========== -->
+<!-- ========== ВХОД УЧИТЕЛЯ (ЛОГИН И ПАРОЛЬ) ========== -->
 <div id="teacherLoginScreen" class="card" style="display: none;">
     <h2>👨‍🏫 Вход для учителя</h2>
     <input type="text" id="teacherLogin" placeholder="Логин">
@@ -135,31 +150,40 @@
     <button id="backFromTeacherBtn" style="background: #555; margin-top: 10px;">◀ Назад</button>
 </div>
 
-<!-- ========== КОМНАТА УЧИТЕЛЯ (показывает код) ========== -->
-<div id="teacherRoom" class="room-container" style="display: none;">
-    <div class="card" style="max-width: 500px; margin: 0 auto 20px auto;">
+<!-- ========== ГЛАВНЫЙ ЭКРАН УЧИТЕЛЯ (С КОДОМ) ========== -->
+<div id="teacherMainScreen" class="teacher-main">
+    <div class="teacher-code-card">
         <h2>📞 Ваш код для ученика</h2>
         <div class="code-display">
             <div class="big-code" id="roomCodeDisplay">-----</div>
         </div>
         <p style="color:#a0c4e0;">Скажите этот 5-значный код ученику. Он введёт его и подключится к вам.</p>
-        <button id="refreshCodeBtn" style="background:#2a7f6e;">🔄 Создать новый код</button>
+        <button id="refreshCodeBtn" style="background:#2a7f6e; width: auto; padding: 12px 30px;">🔄 Создать новый код</button>
     </div>
     
     <div class="video-grid">
         <div class="video-card">
             <div class="video-header"><span>📷 Вы</span><span id="teacherMyStatus" class="status status-off">Ожидание</span></div>
-            <div class="video-wrapper"><video id="teacherMyVideo" autoplay playsinline muted></video><div id="teacherMyPlaceholder" class="placeholder">Камера выключена</div></div>
+            <div class="video-wrapper">
+                <video id="teacherMyVideo" autoplay playsinline muted></video>
+                <div id="teacherMyPlaceholder" class="placeholder">Камера выключена</div>
+            </div>
         </div>
         <div class="video-card">
             <div class="video-header"><span>👥 Ученик</span><span id="teacherRemoteStatus" class="status status-off">Не подключён</span></div>
-            <div class="video-wrapper"><video id="teacherRemoteVideo" autoplay playsinline></video><div id="teacherRemotePlaceholder" class="placeholder">Ожидание ученика...</div></div>
+            <div class="video-wrapper">
+                <video id="teacherRemoteVideo" autoplay playsinline></video>
+                <div id="teacherRemotePlaceholder" class="placeholder">Ожидание ученика...</div>
+            </div>
         </div>
     </div>
     
     <div id="teacherScreenArea" class="screen-area">
         <div class="video-header">🖥️ Ваш экран</div>
-        <div class="video-wrapper"><video id="teacherScreenVideo" autoplay playsinline></video><div id="teacherScreenPlaceholder" class="placeholder">Экран не транслируется</div></div>
+        <div class="video-wrapper">
+            <video id="teacherScreenVideo" autoplay playsinline></video>
+            <div id="teacherScreenPlaceholder" class="placeholder">Экран не транслируется</div>
+        </div>
     </div>
     
     <div class="controls">
@@ -171,7 +195,7 @@
     <div id="teacherInfo" class="info">💡 Ожидайте подключения ученика</div>
 </div>
 
-<!-- ========== ВХОД УЧЕНИКА (ввод кода) ========== -->
+<!-- ========== ВХОД УЧЕНИКА (ВВОД КОДА) ========== -->
 <div id="studentCodeScreen" class="card" style="display: none;">
     <h2>👩‍🎓 Вход для ученика</h2>
     <h3>Введите 5-значный код учителя</h3>
@@ -181,29 +205,38 @@
     <button id="backFromStudentBtn" style="background: #555; margin-top: 10px;">◀ Назад</button>
 </div>
 
-<!-- ========== КОМНАТА УЧЕНИКА ========== -->
+<!-- ========== КОМНАТА УЧЕНИКА (ПОСЛЕ ВВОДА КОДА) ========== -->
 <div id="studentRoom" class="room-container" style="display: none;">
     <div class="video-grid">
         <div class="video-card">
             <div class="video-header"><span>📷 Вы</span><span id="studentMyStatus" class="status status-off">Ожидание</span></div>
-            <div class="video-wrapper"><video id="studentMyVideo" autoplay playsinline muted></video><div id="studentMyPlaceholder" class="placeholder">Камера выключена</div></div>
+            <div class="video-wrapper">
+                <video id="studentMyVideo" autoplay playsinline muted></video>
+                <div id="studentMyPlaceholder" class="placeholder">Камера выключена</div>
+            </div>
         </div>
         <div class="video-card">
             <div class="video-header"><span>👥 Учитель</span><span id="studentRemoteStatus" class="status status-off">Не подключён</span></div>
-            <div class="video-wrapper"><video id="studentRemoteVideo" autoplay playsinline></video><div id="studentRemotePlaceholder" class="placeholder">Ожидание учителя...</div></div>
+            <div class="video-wrapper">
+                <video id="studentRemoteVideo" autoplay playsinline></video>
+                <div id="studentRemotePlaceholder" class="placeholder">Ожидание учителя...</div>
+            </div>
         </div>
     </div>
     
     <div id="studentScreenArea" class="screen-area">
         <div class="video-header">🖥️ Экран учителя</div>
-        <div class="video-wrapper"><video id="studentScreenVideo" autoplay playsinline></video><div id="studentScreenPlaceholder" class="placeholder">Учитель не показывает экран</div></div>
+        <div class="video-wrapper">
+            <video id="studentScreenVideo" autoplay playsinline></video>
+            <div id="studentScreenPlaceholder" class="placeholder">Учитель не показывает экран</div>
+        </div>
     </div>
     
     <div class="controls">
         <button id="studentCamBtn" class="btn btn-cam">📷 Выкл камеру</button>
         <button id="studentMicBtn" class="btn btn-mic">🎤 Выкл микрофон</button>
     </div>
-    <div id="studentInfo" class="info">💡 Введите код для подключения</div>
+    <div id="studentInfo" class="info">💡 Подключение к учителю...</div>
 </div>
 
 <script>
@@ -227,14 +260,16 @@
     const chooseTeacherBtn = document.getElementById('chooseTeacherBtn');
     const chooseStudentBtn = document.getElementById('chooseStudentBtn');
     
-    // DOM элементы учителя
+    // DOM элементы учителя (вход)
     const teacherLoginScreen = document.getElementById('teacherLoginScreen');
-    const teacherRoom = document.getElementById('teacherRoom');
     const teacherLogin = document.getElementById('teacherLogin');
     const teacherPassword = document.getElementById('teacherPassword');
     const teacherEnterBtn = document.getElementById('teacherEnterBtn');
     const teacherError = document.getElementById('teacherError');
     const backFromTeacherBtn = document.getElementById('backFromTeacherBtn');
+    
+    // DOM элементы главного экрана учителя
+    const teacherMainScreen = document.getElementById('teacherMainScreen');
     const roomCodeDisplay = document.getElementById('roomCodeDisplay');
     const refreshCodeBtn = document.getElementById('refreshCodeBtn');
     const teacherMyVideo = document.getElementById('teacherMyVideo');
@@ -252,13 +287,15 @@
     const teacherStartScreenBtn = document.getElementById('teacherStartScreenBtn');
     const teacherStopScreenBtn = document.getElementById('teacherStopScreenBtn');
     
-    // DOM элементы ученика
+    // DOM элементы ученика (ввод кода)
     const studentCodeScreen = document.getElementById('studentCodeScreen');
-    const studentRoom = document.getElementById('studentRoom');
     const studentCodeInput = document.getElementById('studentCode');
     const studentEnterBtn = document.getElementById('studentEnterBtn');
     const studentError = document.getElementById('studentError');
     const backFromStudentBtn = document.getElementById('backFromStudentBtn');
+    
+    // DOM элементы комнаты ученика
+    const studentRoom = document.getElementById('studentRoom');
     const studentMyVideo = document.getElementById('studentMyVideo');
     const studentRemoteVideo = document.getElementById('studentRemoteVideo');
     const studentScreenVideo = document.getElementById('studentScreenVideo');
@@ -305,7 +342,7 @@
         
         if (login === TEACHER_LOGIN && password === TEACHER_PASS) {
             teacherLoginScreen.style.display = 'none';
-            teacherRoom.style.display = 'block';
+            teacherMainScreen.style.display = 'block';
             currentRole = 'teacher';
             await initTeacher();
         } else {
@@ -320,7 +357,7 @@
             localStream = stream;
             teacherMyVideo.srcObject = stream;
             teacherMyPlaceholder.style.display = 'none';
-            teacherInfo.innerHTML = "✅ Камера готова. Создайте код для ученика.";
+            teacherInfo.innerHTML = "✅ Камера готова. Код создан.";
         } catch(err) {
             teacherInfo.innerHTML = "❌ Ошибка доступа к камере: " + err.message;
             teacherMyPlaceholder.innerHTML = "⚠️ Нет доступа к камере";
@@ -337,6 +374,7 @@
         // Закрываем старый Peer если был
         if (currentPeer) {
             if (currentCall) currentCall.close();
+            if (currentScreenCall) currentScreenCall.close();
             currentPeer.destroy();
         }
         
@@ -380,9 +418,6 @@
         
         currentPeer.on('error', (err) => {
             console.log("Peer error:", err);
-            if (err.type === 'peer-unavailable') {
-                teacherInfo.innerHTML = "⚠️ Ошибка: код уже используется";
-            }
         });
     }
     
@@ -520,9 +555,6 @@
                     studentRemoteStatus.className = 'status status-off';
                     studentInfo.innerHTML = "⚠️ Учитель отключился";
                 });
-                call.on('error', (err) => {
-                    studentInfo.innerHTML = "Ошибка: " + err;
-                });
                 currentCall = call;
             }
         });
@@ -563,7 +595,6 @@
             console.log("Peer error:", err);
             if (err.type === 'peer-unavailable') {
                 studentInfo.innerHTML = "⚠️ Код недействителен. Проверьте код у учителя.";
-                studentError.innerText = "Неверный код. Учитель должен создать новый код.";
             } else {
                 studentInfo.innerHTML = "Ошибка: " + err.message;
             }
