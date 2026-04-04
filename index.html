@@ -2,38 +2,40 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Репетитор - Видеосвязь</title>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #0c1a2b, #0a111f);
+            background: linear-gradient(135deg, #0c1a2b 0%, #0a111f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
 
-        /* Вход */
-        .login-container {
+        /* Экран входа */
+        .login-screen {
             max-width: 450px;
-            margin: 100px auto;
+            width: 100%;
             background: rgba(19, 33, 46, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 28px;
             padding: 35px;
             border: 1px solid #2c6e8f;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            text-align: center;
         }
 
-        .login-container h2 {
+        .login-screen h2 {
             color: #e2f0ff;
-            text-align: center;
             margin-bottom: 25px;
             font-size: 28px;
         }
@@ -54,6 +56,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
+            font-size: 16px;
         }
 
         .role-btn.active {
@@ -73,6 +76,10 @@
             outline: none;
         }
 
+        .login-input::placeholder {
+            color: #8aaec0;
+        }
+
         .login-btn {
             width: 100%;
             padding: 14px;
@@ -84,21 +91,17 @@
             font-weight: bold;
             font-size: 18px;
             cursor: pointer;
+            transition: 0.2s;
         }
 
-        .login-btn:hover { background: #3a8bb8; }
-
-        .error-msg {
-            color: #ffb4a2;
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-        }
+        .login-btn:hover { background: #3a8bb8; transform: translateY(-2px); }
+        .error-msg { color: #ffb4a2; margin-top: 15px; font-size: 14px; }
 
         /* Комната */
-        .room-container {
+        .room-screen {
             display: none;
             max-width: 1400px;
+            width: 100%;
             margin: 0 auto;
         }
 
@@ -148,6 +151,7 @@
             background: #0f1a24;
             color: #7c9eb3;
             font-size: 18px;
+            text-align: center;
         }
 
         .screen-area {
@@ -157,10 +161,6 @@
             border: 1px solid #3c6e8f;
             overflow: hidden;
             display: none;
-        }
-
-        .screen-area .video-wrapper {
-            aspect-ratio: 16/9;
         }
 
         .controls {
@@ -184,10 +184,12 @@
             transition: 0.2s;
         }
 
-        .btn-cam { background: #1f6e8c; }
-        .btn-mic { background: #1f6e8c; }
-        .btn-screen { background: #2a7f6e; }
-        .btn-stop { background: #b86b2c; }
+        .btn-primary { background: #1f6e8c; }
+        .btn-primary:hover { background: #2b8bb0; transform: translateY(-2px); }
+        .btn-success { background: #2a7f6e; }
+        .btn-success:hover { background: #359e88; transform: translateY(-2px); }
+        .btn-warning { background: #b86b2c; }
+        .btn-warning:hover { background: #d47e3a; transform: translateY(-2px); }
 
         .info {
             background: #0f1f2a;
@@ -214,6 +216,8 @@
             padding: 10px;
             border-radius: 40px;
             color: white;
+            font-size: 12px;
+            outline: none;
         }
 
         .copy-btn {
@@ -226,39 +230,42 @@
         }
 
         .status-badge {
-            font-size: 12px;
+            font-size: 11px;
             padding: 4px 12px;
             border-radius: 20px;
         }
 
-        .connected { background: #2e7d5e; }
-        .waiting { background: #8b6b2c; }
+        .status-connected { background: #2e7d5e; }
+        .status-waiting { background: #8b6b2c; }
 
         @media (max-width: 700px) {
             .video-grid { flex-direction: column; }
+            .btn { padding: 8px 16px; font-size: 12px; }
         }
     </style>
 </head>
 <body>
 
-<div id="loginScreen" class="login-container">
+<!-- Экран входа -->
+<div id="loginScreen" class="login-screen">
     <h2>📚 Репетитор</h2>
     <div class="role-switch">
         <button class="role-btn active" id="teacherRoleBtn">👨‍🏫 Учитель</button>
         <button class="role-btn" id="studentRoleBtn">👩‍🎓 Ученик</button>
     </div>
-    <input type="text" id="login" class="login-input" placeholder="Логин">
-    <input type="password" id="password" class="login-input" placeholder="Пароль">
+    <input type="text" id="loginInput" class="login-input" placeholder="Логин">
+    <input type="password" id="passwordInput" class="login-input" placeholder="Пароль">
     <button id="enterBtn" class="login-btn">Войти</button>
     <div id="loginError" class="error-msg"></div>
 </div>
 
-<div id="roomScreen" class="room-container">
+<!-- Комната -->
+<div id="roomScreen" class="room-screen">
     <div class="video-grid">
         <div class="video-card">
             <div class="video-header">
                 <span>📷 Вы</span>
-                <span id="myStatus" class="status-badge waiting">⏳</span>
+                <span id="myStatus" class="status-badge status-waiting">⏳ Ожидание</span>
             </div>
             <div class="video-wrapper">
                 <video id="myVideo" autoplay playsinline muted></video>
@@ -268,7 +275,7 @@
         <div class="video-card">
             <div class="video-header">
                 <span>👥 Собеседник</span>
-                <span id="remoteStatus" class="status-badge waiting">⏳ Ожидание</span>
+                <span id="remoteStatus" class="status-badge status-waiting">⏳ Ожидание</span>
             </div>
             <div class="video-wrapper">
                 <video id="remoteVideo" autoplay playsinline></video>
@@ -277,7 +284,7 @@
         </div>
     </div>
 
-    <div id="screenContainer" class="screen-area">
+    <div id="screenArea" class="screen-area">
         <div class="video-header">🖥️ Демонстрация экрана</div>
         <div class="video-wrapper">
             <video id="screenVideo" autoplay playsinline></video>
@@ -286,438 +293,415 @@
     </div>
 
     <div class="controls">
-        <button id="toggleCamBtn" class="btn btn-cam">📷 Выкл камеру</button>
-        <button id="toggleMicBtn" class="btn btn-mic">🎤 Выкл микрофон</button>
-        <button id="startScreenBtn" class="btn btn-screen">🖥️ Включить экран</button>
-        <button id="stopScreenBtn" class="btn btn-stop" disabled>🛑 Остановить экран</button>
+        <button id="camBtn" class="btn btn-primary">📷 Выкл камеру</button>
+        <button id="micBtn" class="btn btn-primary">🎤 Выкл микрофон</button>
+        <button id="startScreenBtn" class="btn btn-success">🖥️ Включить экран</button>
+        <button id="stopScreenBtn" class="btn btn-warning" disabled>🛑 Остановить экран</button>
     </div>
 
-    <div class="info" id="infoMsg">
-        💡 Создайте комнату и отправьте ссылку ученику
+    <div class="info" id="infoMessage">
+        💡 Нажмите "Войти" для начала
     </div>
 
     <div class="link-box">
-        <input type="text" id="roomLink" class="link-input" readonly>
+        <input type="text" id="roomLink" class="link-input" readonly placeholder="Ссылка появится после входа">
         <button id="copyLinkBtn" class="copy-btn">📋 Копировать</button>
     </div>
 </div>
 
 <script>
-    // ============ ДАННЫЕ УЧИТЕЛЯ (СКРЫТЫ) ============
-    const TEACHER_LOGIN = "2347";
-    const TEACHER_PASS = "2203";
-    
-    // ============ ПЕРЕМЕННЫЕ ============
-    let myRole = null;           // 'teacher' или 'student'
-    let roomId = null;
-    let localStream = null;
-    let screenStream = null;
-    let peerConnection = null;
-    let isCameraOn = true;
-    let isMicOn = true;
-    let isScreenSharing = false;
-    
-    // DOM элементы
-    const loginScreen = document.getElementById('loginScreen');
-    const roomScreen = document.getElementById('roomScreen');
-    const myVideo = document.getElementById('myVideo');
-    const remoteVideo = document.getElementById('remoteVideo');
-    const screenVideo = document.getElementById('screenVideo');
-    const myPlaceholder = document.getElementById('myPlaceholder');
-    const remotePlaceholder = document.getElementById('remotePlaceholder');
-    const screenPlaceholder = document.getElementById('screenPlaceholder');
-    const screenContainer = document.getElementById('screenContainer');
-    const remoteStatusSpan = document.getElementById('remoteStatus');
-    const myStatusSpan = document.getElementById('myStatus');
-    const roomLinkInput = document.getElementById('roomLink');
-    const infoMsg = document.getElementById('infoMsg');
-    
-    // Кнопки
-    const teacherRoleBtn = document.getElementById('teacherRoleBtn');
-    const studentRoleBtn = document.getElementById('studentRoleBtn');
-    const enterBtn = document.getElementById('enterBtn');
-    const toggleCamBtn = document.getElementById('toggleCamBtn');
-    const toggleMicBtn = document.getElementById('toggleMicBtn');
-    const startScreenBtn = document.getElementById('startScreenBtn');
-    const stopScreenBtn = document.getElementById('stopScreenBtn');
-    const copyLinkBtn = document.getElementById('copyLinkBtn');
-    const loginInput = document.getElementById('login');
-    const passwordInput = document.getElementById('password');
-    const loginError = document.getElementById('loginError');
-    
-    let currentRoleSelect = 'teacher';
-    
-    // Переключение ролей на входе
-    teacherRoleBtn.onclick = () => {
-        currentRoleSelect = 'teacher';
-        teacherRoleBtn.classList.add('active');
-        studentRoleBtn.classList.remove('active');
-        loginInput.placeholder = "Логин";
-        passwordInput.placeholder = "Пароль";
-    };
-    
-    studentRoleBtn.onclick = () => {
-        currentRoleSelect = 'student';
-        studentRoleBtn.classList.add('active');
-        teacherRoleBtn.classList.remove('active');
-        loginInput.placeholder = "Ваше имя";
-        passwordInput.placeholder = "Любой пароль";
-    };
-    
-    // Вход
-    enterBtn.onclick = async () => {
-        const login = loginInput.value.trim();
-        const password = passwordInput.value.trim();
+    // Ждём полной загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
         
-        if (currentRoleSelect === 'teacher') {
-            if (login === TEACHER_LOGIN && password === TEACHER_PASS) {
-                myRole = 'teacher';
-                await initRoom();
+        // ============ ДАННЫЕ УЧИТЕЛЯ ============
+        const TEACHER_LOGIN = "2347";
+        const TEACHER_PASS = "2203";
+        
+        // ============ ПЕРЕМЕННЫЕ ============
+        let myRole = null;
+        let roomId = null;
+        let localStream = null;
+        let screenStream = null;
+        let peer = null;
+        let currentCall = null;
+        let screenCall = null;
+        let isCameraOn = true;
+        let isMicOn = true;
+        let isScreenSharing = false;
+        
+        // DOM элементы
+        const loginScreen = document.getElementById('loginScreen');
+        const roomScreen = document.getElementById('roomScreen');
+        const myVideo = document.getElementById('myVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const screenVideo = document.getElementById('screenVideo');
+        const myPlaceholder = document.getElementById('myPlaceholder');
+        const remotePlaceholder = document.getElementById('remotePlaceholder');
+        const screenPlaceholder = document.getElementById('screenPlaceholder');
+        const screenArea = document.getElementById('screenArea');
+        const myStatusSpan = document.getElementById('myStatus');
+        const remoteStatusSpan = document.getElementById('remoteStatus');
+        const roomLinkInput = document.getElementById('roomLink');
+        const infoDiv = document.getElementById('infoMessage');
+        
+        // Кнопки
+        const teacherRoleBtn = document.getElementById('teacherRoleBtn');
+        const studentRoleBtn = document.getElementById('studentRoleBtn');
+        const enterBtn = document.getElementById('enterBtn');
+        const camBtn = document.getElementById('camBtn');
+        const micBtn = document.getElementById('micBtn');
+        const startScreenBtn = document.getElementById('startScreenBtn');
+        const stopScreenBtn = document.getElementById('stopScreenBtn');
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        const loginInput = document.getElementById('loginInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginError = document.getElementById('loginError');
+        
+        let currentRoleSelect = 'teacher';
+        
+        // Переключение ролей
+        if (teacherRoleBtn) {
+            teacherRoleBtn.onclick = function() {
+                currentRoleSelect = 'teacher';
+                teacherRoleBtn.classList.add('active');
+                studentRoleBtn.classList.remove('active');
+                loginInput.placeholder = "Логин";
+                passwordInput.placeholder = "Пароль";
+                loginError.innerText = "";
+            };
+        }
+        
+        if (studentRoleBtn) {
+            studentRoleBtn.onclick = function() {
+                currentRoleSelect = 'student';
+                studentRoleBtn.classList.add('active');
+                teacherRoleBtn.classList.remove('active');
+                loginInput.placeholder = "Ваше имя";
+                passwordInput.placeholder = "Любой пароль";
+                loginError.innerText = "";
+            };
+        }
+        
+        // Функция входа
+        async function handleLogin() {
+            console.log("Кнопка входа нажата");
+            const login = loginInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (currentRoleSelect === 'teacher') {
+                if (login === TEACHER_LOGIN && password === TEACHER_PASS) {
+                    myRole = 'teacher';
+                    await startSession();
+                } else {
+                    loginError.innerText = "❌ Неверный логин или пароль учителя";
+                }
             } else {
-                loginError.innerText = "❌ Неверный логин или пароль";
-            }
-        } else {
-            if (login && password) {
-                myRole = 'student';
-                await initRoom();
-            } else {
-                loginError.innerText = "❌ Введите логин и пароль";
+                if (login && password) {
+                    myRole = 'student';
+                    await startSession();
+                } else {
+                    loginError.innerText = "❌ Введите логин и пароль";
+                }
             }
         }
-    };
-    
-    async function initRoom() {
-        loginScreen.style.display = 'none';
-        roomScreen.style.display = 'block';
         
-        // Получаем или создаём ID комнаты
-        const urlParams = new URLSearchParams(window.location.search);
-        let roomFromUrl = urlParams.get('room');
+        // Привязываем обработчик к кнопке входа
+        if (enterBtn) {
+            enterBtn.onclick = handleLogin;
+        }
         
-        if (myRole === 'teacher') {
-            // Учитель создаёт новую комнату
-            roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-            const newUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-            window.history.pushState({}, '', newUrl);
-            roomLinkInput.value = window.location.href;
-            infoMsg.innerHTML = `✅ Комната создана! ID: ${roomId}. Отправьте ссылку ученику.`;
-        } else {
-            // Ученик подключается к существующей
-            if (roomFromUrl) {
-                roomId = roomFromUrl;
+        async function startSession() {
+            console.log("Запуск сессии, роль:", myRole);
+            loginScreen.style.display = 'none';
+            roomScreen.style.display = 'block';
+            
+            // Запрашиваем камеру и микрофон
+            await getMedia();
+            
+            if (myRole === 'teacher') {
+                // Учитель создаёт комнату
+                roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+                const url = new URL(window.location.href);
+                url.searchParams.set('room', roomId);
+                window.history.pushState({}, '', url);
                 roomLinkInput.value = window.location.href;
-                infoMsg.innerHTML = `🔗 Подключение к комнате ${roomId}...`;
+                infoDiv.innerHTML = `✅ Комната создана! ID: ${roomId}. Отправьте ссылку ученику.`;
+                
+                // Создаём Peer
+                createPeer(roomId);
             } else {
-                const inputRoom = prompt("Введите ID комнаты от учителя:");
-                if (inputRoom) {
-                    roomId = inputRoom.toUpperCase();
-                    const newUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+                // Ученик подключается
+                const urlParams = new URLSearchParams(window.location.search);
+                let invitedRoom = urlParams.get('room');
+                if (!invitedRoom) {
+                    invitedRoom = prompt("Введите ID комнаты от учителя:");
+                    if (!invitedRoom) {
+                        location.reload();
+                        return;
+                    }
+                    const newUrl = `${window.location.origin}${window.location.pathname}?room=${invitedRoom}`;
                     window.history.pushState({}, '', newUrl);
-                    roomLinkInput.value = window.location.href;
+                    roomLinkInput.value = newUrl;
                 } else {
-                    location.reload();
+                    roomLinkInput.value = window.location.href;
+                }
+                roomId = invitedRoom;
+                infoDiv.innerHTML = `🔗 Подключение к комнате ${roomId}...`;
+                
+                // Создаём Peer с уникальным ID
+                const studentId = 'student_' + Math.random().toString(36).substring(2, 10);
+                createPeer(studentId);
+                
+                // Ждём и звоним учителю
+                setTimeout(() => {
+                    if (peer && localStream) {
+                        infoDiv.innerHTML = "📞 Звоню учителю...";
+                        const call = peer.call(roomId, localStream);
+                        handleCall(call);
+                    }
+                }, 2000);
+            }
+        }
+        
+        async function getMedia() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localStream = stream;
+                myVideo.srcObject = stream;
+                myPlaceholder.style.display = 'none';
+                isCameraOn = true;
+                isMicOn = true;
+                updateUI();
+                infoDiv.innerHTML = "✅ Камера и микрофон готовы";
+                return true;
+            } catch (err) {
+                console.error("Ошибка доступа к медиа:", err);
+                infoDiv.innerHTML = `❌ Ошибка: ${err.message}. Разрешите доступ к камере и микрофону.`;
+                myPlaceholder.innerHTML = "⚠️ Нет доступа к камере/микрофону";
+                return false;
+            }
+        }
+        
+        function createPeer(id) {
+            console.log("Создание Peer с ID:", id);
+            peer = new Peer(id, {
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' }
+                    ]
+                }
+            });
+            
+            peer.on('open', () => {
+                console.log('Peer открыт, ID:', peer.id);
+                if (myRole === 'teacher') {
+                    infoDiv.innerHTML = `✅ Комната ${roomId} готова! Жду ученика...`;
+                    myStatusSpan.innerHTML = '🎥 Ожидание';
+                    myStatusSpan.className = 'status-badge status-waiting';
+                }
+            });
+            
+            peer.on('call', (call) => {
+                console.log('Входящий звонок от:', call.peer);
+                if (call.metadata && call.metadata.type === 'screen') {
+                    handleScreenCall(call);
+                } else {
+                    handleCall(call);
+                }
+            });
+            
+            peer.on('error', (err) => {
+                console.error('Peer ошибка:', err);
+                infoDiv.innerHTML = `⚠️ Ошибка: ${err.message}`;
+            });
+            
+            peer.on('disconnected', () => {
+                console.log('Peer отключён');
+                infoDiv.innerHTML = "⚠️ Соединение разорвано, переподключение...";
+                peer.reconnect();
+            });
+        }
+        
+        function handleCall(call) {
+            if (localStream) {
+                call.answer(localStream);
+                call.on('stream', (remoteStream) => {
+                    console.log("Получен поток от собеседника");
+                    remoteVideo.srcObject = remoteStream;
+                    remotePlaceholder.style.display = 'none';
+                    remoteStatusSpan.innerHTML = '🟢 В сети';
+                    remoteStatusSpan.className = 'status-badge status-connected';
+                    myStatusSpan.innerHTML = '🎥 В сети';
+                    myStatusSpan.className = 'status-badge status-connected';
+                    infoDiv.innerHTML = "✅ Соединение установлено!";
+                });
+                call.on('close', () => {
+                    console.log("Звонок закрыт");
+                    remoteVideo.srcObject = null;
+                    remotePlaceholder.style.display = 'flex';
+                    remoteStatusSpan.innerHTML = '⏳ Отключён';
+                    remoteStatusSpan.className = 'status-badge status-waiting';
+                    infoDiv.innerHTML = "⚠️ Собеседник отключился";
+                });
+                currentCall = call;
+            }
+        }
+        
+        function handleScreenCall(call) {
+            call.answer();
+            call.on('stream', (stream) => {
+                console.log("Получен поток экрана");
+                screenVideo.srcObject = stream;
+                screenArea.style.display = 'block';
+                screenPlaceholder.style.display = 'none';
+                infoDiv.innerHTML = "🖥️ Учитель показывает экран";
+                if (myRole === 'student') {
+                    applyFullscreenLayout(true);
+                }
+            });
+            call.on('close', () => {
+                screenVideo.srcObject = null;
+                screenArea.style.display = 'none';
+                if (myRole === 'student') {
+                    applyFullscreenLayout(false);
+                }
+            });
+            screenCall = call;
+        }
+        
+        function applyFullscreenLayout(screenActive) {
+            const localCard = document.querySelector('.video-card:first-child');
+            const remoteCard = document.querySelector('.video-card:last-child');
+            
+            if (myRole === 'student' && !screenActive && remoteVideo.srcObject) {
+                remoteCard.style.flex = '1 1 100%';
+                localCard.style.display = 'none';
+            } else {
+                remoteCard.style.flex = '1';
+                localCard.style.display = 'flex';
+            }
+        }
+        
+        function updateUI() {
+            if (localStream) {
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) videoTrack.enabled = isCameraOn;
+                myPlaceholder.style.display = isCameraOn ? 'none' : 'flex';
+                if (!isCameraOn) myPlaceholder.innerHTML = '📷 Камера выключена';
+                camBtn.innerHTML = isCameraOn ? '📷 Выкл камеру' : '📷 Вкл камеру';
+                
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) audioTrack.enabled = isMicOn;
+                micBtn.innerHTML = isMicOn ? '🎤 Выкл микрофон' : '🎤 Вкл микрофон';
+            }
+        }
+        
+        // Демонстрация экрана (только учитель)
+        if (startScreenBtn) {
+            startScreenBtn.onclick = async () => {
+                if (myRole !== 'teacher') {
+                    infoDiv.innerHTML = "⚠️ Только учитель может демонстрировать экран!";
                     return;
                 }
-            }
-        }
-        
-        // Запрашиваем доступ к камере и микрофону
-        await getMedia();
-        
-        // Подключаемся к серверу сигналинга
-        connectToSignaling();
-    }
-    
-    async function getMedia() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            localStream = stream;
-            myVideo.srcObject = stream;
-            myPlaceholder.style.display = 'none';
-            isCameraOn = true;
-            isMicOn = true;
-            updateUI();
-        } catch (err) {
-            infoMsg.innerHTML = `❌ Ошибка доступа к камере: ${err.message}`;
-            myPlaceholder.innerHTML = "⚠️ Нет доступа к камере/микрофону";
-        }
-    }
-    
-    function updateUI() {
-        if (localStream) {
-            const videoTrack = localStream.getVideoTracks()[0];
-            if (videoTrack) videoTrack.enabled = isCameraOn;
-            myPlaceholder.style.display = isCameraOn ? 'none' : 'flex';
-            if (!isCameraOn) myPlaceholder.innerHTML = '📷 Камера выключена';
-            toggleCamBtn.innerHTML = isCameraOn ? '📷 Выкл камеру' : '📷 Вкл камеру';
-            
-            const audioTrack = localStream.getAudioTracks()[0];
-            if (audioTrack) audioTrack.enabled = isMicOn;
-            toggleMicBtn.innerHTML = isMicOn ? '🎤 Выкл микрофон' : '🎤 Вкл микрофон';
-        }
-    }
-    
-    // ============ СОЗДАНИЕ ПРОСТОГО WebRTC СОЕДИНЕНИЯ ============
-    // Используем публичный сервер сигналинга
-    let socket = null;
-    
-    function connectToSignaling() {
-        // Публичный WebSocket сервер для сигналинга
-        socket = io('https://webrtc-signaling-1.onrender.com', {
-            transports: ['websocket'],
-            reconnection: true
-        });
-        
-        socket.on('connect', () => {
-            console.log('Соединение с сервером установлено');
-            infoMsg.innerHTML = `✅ Подключено к серверу. Комната: ${roomId}`;
-            
-            // Входим в комнату
-            socket.emit('join', { roomId, role: myRole });
-            
-            if (myRole === 'teacher') {
-                myStatusSpan.innerHTML = '🎥 Ожидаю ученика';
-                myStatusSpan.className = 'status-badge waiting';
-            } else {
-                myStatusSpan.innerHTML = '🎥 Подключение...';
-                myStatusSpan.className = 'status-badge waiting';
-            }
-        });
-        
-        socket.on('ready', async (data) => {
-            console.log('Готов к соединению:', data);
-            await createPeerConnection();
-            
-            if (myRole === 'teacher') {
-                // Учитель создаёт offer
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                socket.emit('signal', { roomId, signal: offer });
-            }
-        });
-        
-        socket.on('signal', async (data) => {
-            if (!peerConnection) {
-                await createPeerConnection();
-            }
-            
-            if (data.signal.type === 'offer') {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.signal));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                socket.emit('signal', { roomId, signal: answer });
-            } else if (data.signal.type === 'answer') {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.signal));
-            } else if (data.signal.candidate) {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(data.signal));
-            }
-        });
-        
-        socket.on('screen-signal', async (data) => {
-            // Обработка сигналов для экрана
-            if (myRole === 'student' && data.signal.type === 'offer') {
-                if (!screenPeerConnection) {
-                    await createScreenPeerConnection();
+                if (!currentCall) {
+                    infoDiv.innerHTML = "⚠️ Сначала дождитесь подключения ученика";
+                    return;
                 }
-                await screenPeerConnection.setRemoteDescription(new RTCSessionDescription(data.signal));
-                const answer = await screenPeerConnection.createAnswer();
-                await screenPeerConnection.setLocalDescription(answer);
-                socket.emit('screen-signal', { roomId, signal: answer });
-            } else if (data.signal.type === 'answer' && screenPeerConnection) {
-                await screenPeerConnection.setRemoteDescription(new RTCSessionDescription(data.signal));
-            } else if (data.signal.candidate && screenPeerConnection) {
-                await screenPeerConnection.addIceCandidate(new RTCIceCandidate(data.signal));
+                if (isScreenSharing) return;
+                
+                try {
+                    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    screenStream = stream;
+                    isScreenSharing = true;
+                    
+                    const call = peer.call(currentCall.peer, stream, { metadata: { type: 'screen' } });
+                    
+                    call.on('stream', (stream) => {
+                        screenVideo.srcObject = stream;
+                        screenArea.style.display = 'block';
+                        screenPlaceholder.style.display = 'none';
+                    });
+                    call.on('close', () => {
+                        stopScreenShare();
+                    });
+                    
+                    screenCall = call;
+                    screenArea.style.display = 'block';
+                    screenVideo.srcObject = stream;
+                    screenPlaceholder.style.display = 'none';
+                    startScreenBtn.disabled = true;
+                    stopScreenBtn.disabled = false;
+                    infoDiv.innerHTML = "🖥️ Демонстрация экрана начата";
+                    
+                    stream.getVideoTracks()[0].onended = () => stopScreenShare();
+                } catch (err) {
+                    infoDiv.innerHTML = "❌ Ошибка: " + err.message;
+                }
+            };
+        }
+        
+        function stopScreenShare() {
+            if (screenStream) {
+                screenStream.getTracks().forEach(t => t.stop());
+                screenStream = null;
             }
+            if (screenCall) {
+                screenCall.close();
+                screenCall = null;
+            }
+            isScreenSharing = false;
+            screenArea.style.display = 'none';
+            screenVideo.srcObject = null;
+            startScreenBtn.disabled = false;
+            stopScreenBtn.disabled = true;
+            infoDiv.innerHTML = "🛑 Демонстрация экрана остановлена";
+            if (myRole === 'student') {
+                applyFullscreenLayout(false);
+            }
+        }
+        
+        if (stopScreenBtn) {
+            stopScreenBtn.onclick = stopScreenShare;
+        }
+        
+        if (camBtn) {
+            camBtn.onclick = () => {
+                isCameraOn = !isCameraOn;
+                updateUI();
+            };
+        }
+        
+        if (micBtn) {
+            micBtn.onclick = () => {
+                isMicOn = !isMicOn;
+                updateUI();
+            };
+        }
+        
+        if (copyLinkBtn) {
+            copyLinkBtn.onclick = () => {
+                roomLinkInput.select();
+                document.execCommand('copy');
+                infoDiv.innerHTML = "📋 Ссылка скопирована!";
+                setTimeout(() => {
+                    infoDiv.innerHTML = "💡 Отправьте ссылку ученику";
+                }, 2000);
+            };
+        }
+        
+        // Очистка при выходе
+        window.addEventListener('beforeunload', () => {
+            if (localStream) localStream.getTracks().forEach(t => t.stop());
+            if (screenStream) screenStream.getTracks().forEach(t => t.stop());
+            if (currentCall) currentCall.close();
+            if (screenCall) screenCall.close();
+            if (peer) peer.destroy();
         });
         
-        socket.on('user-left', () => {
-            remoteStatusSpan.innerHTML = '⏳ Собеседник отключился';
-            remoteStatusSpan.className = 'status-badge waiting';
-            remotePlaceholder.style.display = 'flex';
-            if (remoteVideo.srcObject) {
-                remoteVideo.srcObject = null;
-            }
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
-        });
-        
-        socket.on('disconnect', () => {
-            infoMsg.innerHTML = "⚠️ Соединение с сервером потеряно. Перезагрузите страницу.";
-        });
-    }
-    
-    let peerConnection = null;
-    let screenPeerConnection = null;
-    
-    async function createPeerConnection() {
-        peerConnection = new RTCPeerConnection({
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-        });
-        
-        // Добавляем локальный поток
-        if (localStream) {
-            localStream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, localStream);
-            });
-        }
-        
-        peerConnection.ontrack = (event) => {
-            if (event.streams && event.streams[0]) {
-                remoteVideo.srcObject = event.streams[0];
-                remotePlaceholder.style.display = 'none';
-                remoteStatusSpan.innerHTML = '🟢 В сети';
-                remoteStatusSpan.className = 'status-badge connected';
-                myStatusSpan.innerHTML = '🎥 В сети';
-                myStatusSpan.className = 'status-badge connected';
-                infoMsg.innerHTML = "✅ Соединение установлено!";
-            }
-        };
-        
-        peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                socket.emit('signal', { roomId, signal: event.candidate });
-            }
-        };
-        
-        peerConnection.onconnectionstatechange = () => {
-            if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
-                remoteStatusSpan.innerHTML = '⏳ Соединение потеряно';
-                remoteStatusSpan.className = 'status-badge waiting';
-            }
-        };
-        
-        return peerConnection;
-    }
-    
-    async function createScreenPeerConnection() {
-        screenPeerConnection = new RTCPeerConnection({
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-        });
-        
-        if (myRole === 'teacher' && screenStream) {
-            screenStream.getTracks().forEach(track => {
-                screenPeerConnection.addTrack(track, screenStream);
-            });
-        }
-        
-        screenPeerConnection.ontrack = (event) => {
-            if (event.streams && event.streams[0]) {
-                screenVideo.srcObject = event.streams[0];
-                screenContainer.style.display = 'block';
-                screenPlaceholder.style.display = 'none';
-                applyFullscreen(true);
-            }
-        };
-        
-        screenPeerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                socket.emit('screen-signal', { roomId, signal: event.candidate });
-            }
-        };
-        
-        return screenPeerConnection;
-    }
-    
-    function applyFullscreen(screenActive) {
-        const localCard = document.querySelector('.video-card:first-child');
-        const remoteCard = document.querySelector('.video-card:last-child');
-        
-        if (myRole === 'student' && !screenActive && remoteVideo.srcObject) {
-            remoteCard.style.flex = '1 1 100%';
-            localCard.style.display = 'none';
-        } else {
-            remoteCard.style.flex = '1';
-            localCard.style.display = 'flex';
-        }
-    }
-    
-    // Демонстрация экрана (только учитель)
-    startScreenBtn.onclick = async () => {
-        if (myRole !== 'teacher') {
-            infoMsg.innerHTML = "⚠️ Только учитель может демонстрировать экран!";
-            return;
-        }
-        if (!peerConnection || peerConnection.connectionState !== 'connected') {
-            infoMsg.innerHTML = "⚠️ Сначала дождитесь подключения ученика";
-            return;
-        }
-        
-        try {
-            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-            screenStream = stream;
-            isScreenSharing = true;
-            
-            await createScreenPeerConnection();
-            
-            const offer = await screenPeerConnection.createOffer();
-            await screenPeerConnection.setLocalDescription(offer);
-            socket.emit('screen-signal', { roomId, signal: offer });
-            
-            screenContainer.style.display = 'block';
-            screenVideo.srcObject = stream;
-            screenPlaceholder.style.display = 'none';
-            startScreenBtn.disabled = true;
-            stopScreenBtn.disabled = false;
-            
-            stream.getVideoTracks()[0].onended = () => stopScreenShare();
-            infoMsg.innerHTML = "🖥️ Демонстрация экрана начата";
-        } catch (err) {
-            infoMsg.innerHTML = "Ошибка: " + err.message;
-        }
-    };
-    
-    function stopScreenShare() {
-        if (screenStream) {
-            screenStream.getTracks().forEach(t => t.stop());
-            screenStream = null;
-        }
-        if (screenPeerConnection) {
-            screenPeerConnection.close();
-            screenPeerConnection = null;
-        }
-        isScreenSharing = false;
-        screenContainer.style.display = 'none';
-        screenVideo.srcObject = null;
-        startScreenBtn.disabled = false;
-        stopScreenBtn.disabled = true;
-        applyFullscreen(false);
-        infoMsg.innerHTML = "🛑 Демонстрация экрана остановлена";
-    }
-    
-    stopScreenBtn.onclick = stopScreenShare;
-    
-    toggleCamBtn.onclick = () => {
-        isCameraOn = !isCameraOn;
-        updateUI();
-    };
-    
-    toggleMicBtn.onclick = () => {
-        isMicOn = !isMicOn;
-        updateUI();
-    };
-    
-    copyLinkBtn.onclick = () => {
-        roomLinkInput.select();
-        document.execCommand('copy');
-        infoMsg.innerHTML = "📋 Ссылка скопирована!";
-        setTimeout(() => {
-            infoMsg.innerHTML = "💡 Отправьте ссылку ученику для подключения";
-        }, 2000);
-    };
-    
-    window.onbeforeunload = () => {
-        if (socket) socket.disconnect();
-        if (localStream) localStream.getTracks().forEach(t => t.stop());
-        if (screenStream) screenStream.getTracks().forEach(t => t.stop());
-    };
+    }); // Конец DOMContentLoaded
 </script>
 </body>
 </html>
