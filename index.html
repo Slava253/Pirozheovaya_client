@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Репетитор Плюс | Видеосвязь</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         * {
@@ -91,10 +89,6 @@
             color: white;
             font-size: 1rem;
             outline: none;
-        }
-
-        .auth-input:focus {
-            border-color: #4aa3cc;
         }
 
         .auth-btn {
@@ -286,6 +280,9 @@
             font-weight: 600;
         }
 
+        .status-connected { color: #4ade80; }
+        .status-waiting { color: #fbbf24; }
+
         @media (max-width: 800px) {
             .participants-grid { flex-direction: column; }
             .btn { padding: 8px 16px; font-size: 0.8rem; }
@@ -364,20 +361,6 @@
 </div>
 
 <script>
-    // ==================== FIREBASE КОНФИГ ====================
-    const firebaseConfig = {
-        apiKey: "AIzaSyDgs8vGBoG88-Gn7NIBnC5mYUnOgipRTHs",
-        authDomain: "repetitor-video.firebaseapp.com",
-        projectId: "repetitor-video",
-        storageBucket: "repetitor-video.firebasestorage.app",
-        messagingSenderId: "225880410444",
-        appId: "1:225880410444:web:43381d8c859bce701967e9",
-        measurementId: "G-7EM10P3E0Z"
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    
     // ==================== СКРЫТЫЕ ДАННЫЕ УЧИТЕЛЯ ====================
     const TEACHER_LOGIN = "2347";
     const TEACHER_PASS = "2203";
@@ -394,8 +377,7 @@
     let isScreenSharing = false;
     let localCameraEnabled = true;
     let localMicEnabled = true;
-    let firebaseRoomRef = null;
-    let teacherPeerId = null;
+    let connectionCheckInterval = null;
     
     // DOM элементы
     const authModal = document.getElementById('authModal');
@@ -441,12 +423,12 @@
         currentRoleSelect = 'student';
         studentTab.classList.add('active');
         teacherTab.classList.remove('active');
-        loginInput.placeholder = "Ваше имя (любое)";
+        loginInput.placeholder = "Ваше имя";
         passwordInput.placeholder = "Любой пароль";
         authError.innerText = "";
     };
     
-    // Авторизация (данные учителя скрыты в коде)
+    // Авторизация
     submitAuth.onclick = async () => {
         const login = loginInput.value.trim();
         const password = passwordInput.value.trim();
@@ -475,18 +457,12 @@
         
         if (myRole === 'teacher') {
             // Учитель создаёт комнату
-            roomId = 'room_' + Math.random().toString(36).substring(2, 10);
+            roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
             const url = new URL(window.location.href);
             url.searchParams.set('room', roomId);
             window.history.pushState({}, '', url);
             roomLinkInput.value = window.location.href;
-            showInfo(`✅ Комната создана! Отправьте ссылку ученику.`, false);
-            
-            firebaseRoomRef = database.ref(`rooms/${roomId}`);
-            await firebaseRoomRef.set({
-                createdAt: Date.now(),
-                active: true
-            });
+            showInfo(`✅ Комната создана! ID: ${roomId}. Отправьте ссылку ученику.`, false);
         } else {
             // Ученик подключается к существующей комнате
             const urlParams = new URLSearchParams(window.location.search);
@@ -502,7 +478,6 @@
             }
             roomId = invitedRoom;
             showInfo(`🔗 Подключение к комнате: ${roomId}`, false);
-            firebaseRoomRef = database.ref(`rooms/${roomId}`);
         }
         
         await getLocalMedia();
@@ -535,107 +510,134 @@
                 iceServers: [
                     { urls: 'stun:stun.l.google.com:19302' },
                     { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'stun:stun2.l.google.com:19302' }
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun3.l.google.com:19302' },
+                    { urls: 'stun:stun4.l.google.com:19302' }
                 ] 
             }
         });
         
-        peer.on('open', async (id) => {
-            console.log(`Peer открыт: ${id}`);
-            
-            if (firebaseRoomRef) {
-                await firebaseRoomRef.update({
-                    [`participants/${myRole}`]: {
-                        peerId: id,
-                        connected: true,
-                        timestamp: Date.now()
-                    }
-                });
-            }
+        peer.on('open', (id) => {
+            console.log(`Peer открыт: ${id}, роль: ${myRole}`);
+            showInfo(`✅ Подключение к серверу установлено`, false);
             
             if (myRole === 'teacher') {
-                // Учитель слушает входящие звонки
+                // Учитель ждёт звонка от ученика
                 peer.on('call', (call) => {
-                    if (call.metadata?.type === 'screen') return;
+                    console.log("Входящий звонок от:", call.peer);
+                    if (call.metadata?.type === 'screen') {
+                        // Это звонок с экраном
+                        return;
+                    }
                     if (localStream) {
                         call.answer(localStream);
                         call.on('stream', (stream) => attachRemoteStream(stream));
                         currentCall = call;
                         showInfo("👨‍🎓 Ученик подключился!", false);
-                        updateConnectionStatus(true);
+                        remoteStatusSpan.innerHTML = '🟢 В сети';
+                        remotePlaceholder.style.display = 'none';
                     }
                 });
                 
-                // Слушаем изменения в Firebase для получения peerId ученика
-                database.ref(`rooms/${roomId}/participants/student`).on('value', async (snapshot) => {
-                    const studentData = snapshot.val();
-                    if (studentData && studentData.peerId && localStream && !currentCall) {
-                        // Учитель звонит ученику
-                        const call = peer.call(studentData.peerId, localStream);
-                        call.on('stream', (stream) => attachRemoteStream(stream));
-                        call.on('close', () => {
-                            remoteStatusSpan.innerHTML = '⏳ Ученик отключился';
-                            remotePlaceholder.style.display = 'flex';
-                            if (remoteVideo.srcObject) remoteVideo.srcObject = null;
-                            updateConnectionStatus(false);
-                        });
-                        currentCall = call;
-                        updateConnectionStatus(true);
-                    }
-                });
+                // Периодически проверяем, есть ли ученик (используем localStorage для сигналинга)
+                startTeacherSignalListener();
             } else {
-                // Ученик: ищем учителя и звоним ему
-                database.ref(`rooms/${roomId}/participants/teacher`).on('value', async (snapshot) => {
-                    const teacherData = snapshot.val();
-                    if (teacherData && teacherData.peerId && localStream && !currentCall) {
-                        teacherPeerId = teacherData.peerId;
-                        showInfo("📞 Соединение с учителем...", false);
-                        const call = peer.call(teacherData.peerId, localStream);
-                        call.on('stream', (stream) => attachRemoteStream(stream));
-                        call.on('close', () => {
-                            remoteStatusSpan.innerHTML = '⏳ Учитель отключился';
-                            remotePlaceholder.style.display = 'flex';
-                            if (remoteVideo.srcObject) remoteVideo.srcObject = null;
-                            updateConnectionStatus(false);
-                        });
-                        currentCall = call;
-                        updateConnectionStatus(true);
-                    }
-                });
-                
-                // Слушаем экран от учителя
-                peer.on('call', (call) => {
-                    if (call.metadata?.type === 'screen') {
-                        call.answer();
-                        call.on('stream', (screenStreamRemote) => {
-                            screenArea.style.display = 'block';
-                            screenVideo.srcObject = screenStreamRemote;
-                            screenPlaceholder.style.display = 'none';
-                            applyFullscreenLayout(true);
-                            showInfo("🖥️ Учитель показывает экран", false);
-                        });
-                        call.on('close', () => {
-                            screenArea.style.display = 'none';
-                            screenVideo.srcObject = null;
-                            applyFullscreenLayout(false);
-                        });
-                        currentScreenCall = call;
-                    }
-                });
+                // Ученик: ищем учителя через localStorage
+                startStudentSignalSender();
             }
         });
         
         peer.on('error', (err) => {
             console.error("Peer error:", err);
-            showInfo("Ошибка соединения: " + err.message, true);
+            showInfo("Ошибка: " + err.message, true);
         });
         
-        // Очистка при отключении
-        if (firebaseRoomRef) {
-            firebaseRoomRef.onDisconnect().update({
-                [`participants/${myRole}`]: null
-            });
-        }
+        peer.on('disconnected', () => {
+            console.log("Peer отключился");
+            showInfo("Соединение разорвано, переподключение...", true);
+            peer.reconnect();
+        });
+        
+        peer.on('close', () => {
+            console.log("Peer закрыт");
+        });
+    }
+    
+    // Учитель слушает сигналы от ученика через localStorage
+    function startTeacherSignalListener() {
+        const storageKey = `webrtc_signal_${roomId}`;
+        
+        const checkSignal = () => {
+            const signal = localStorage.getItem(storageKey);
+            if (signal && !currentCall && localStream) {
+                try {
+                    const data = JSON.parse(signal);
+                    if (data.type === 'call' && data.peerId) {
+                        console.log("Учитель получил сигнал от ученика:", data.peerId);
+                        // Учитель звонит ученику
+                        const call = peer.call(data.peerId, localStream);
+                        call.on('stream', (stream) => attachRemoteStream(stream));
+                        call.on('close', () => {
+                            remoteStatusSpan.innerHTML = '⏳ Ученик отключился';
+                            remotePlaceholder.style.display = 'flex';
+                            if (remoteVideo.srcObject) remoteVideo.srcObject = null;
+                        });
+                        currentCall = call;
+                        remoteStatusSpan.innerHTML = '🟢 В сети';
+                        remotePlaceholder.style.display = 'none';
+                        // Удаляем сигнал
+                        localStorage.removeItem(storageKey);
+                    }
+                } catch(e) {}
+            }
+        };
+        
+        connectionCheckInterval = setInterval(checkSignal, 1000);
+    }
+    
+    // Ученик отправляет сигнал учителю через localStorage
+    function startStudentSignalSender() {
+        const storageKey = `webrtc_signal_${roomId}`;
+        
+        // Ждём пока peer получит ID
+        const waitForPeer = setInterval(() => {
+            if (peer && peer.id && localStream) {
+                clearInterval(waitForPeer);
+                const signal = JSON.stringify({
+                    type: 'call',
+                    peerId: peer.id,
+                    timestamp: Date.now()
+                });
+                localStorage.setItem(storageKey, signal);
+                console.log("Ученик отправил сигнал учителю, peerId:", peer.id);
+                showInfo("📞 Вызов учителя...", false);
+            }
+        }, 500);
+        
+        // Также слушаем возможный ответ или экран
+        peer.on('call', (call) => {
+            if (call.metadata?.type === 'screen') {
+                call.answer();
+                call.on('stream', (screenStreamRemote) => {
+                    screenArea.style.display = 'block';
+                    screenVideo.srcObject = screenStreamRemote;
+                    screenPlaceholder.style.display = 'none';
+                    applyFullscreenLayout(true);
+                    showInfo("🖥️ Учитель показывает экран", false);
+                });
+                call.on('close', () => {
+                    screenArea.style.display = 'none';
+                    screenVideo.srcObject = null;
+                    applyFullscreenLayout(false);
+                });
+                currentScreenCall = call;
+            }
+        });
+        
+        // Очистка сигнала через 30 секунд
+        setTimeout(() => {
+            localStorage.removeItem(storageKey);
+        }, 30000);
     }
     
     function attachRemoteStream(stream) {
@@ -653,14 +655,6 @@
         });
         
         applyFullscreenLayout(screenArea.style.display === 'block');
-    }
-    
-    function updateConnectionStatus(connected) {
-        if (connected) {
-            remoteStatusSpan.innerHTML = '🟢 В сети';
-        } else {
-            remoteStatusSpan.innerHTML = '⏳ Ожидание';
-        }
     }
     
     function updateLocalUI() {
@@ -770,12 +764,12 @@
     };
     
     window.addEventListener('beforeunload', () => {
+        if (connectionCheckInterval) clearInterval(connectionCheckInterval);
         if (localStream) localStream.getTracks().forEach(t => t.stop());
         if (screenStream) screenStream.getTracks().forEach(t => t.stop());
         if (currentCall) currentCall.close();
         if (currentScreenCall) currentScreenCall.close();
         if (peer) peer.destroy();
-        if (firebaseRoomRef) firebaseRoomRef.remove();
     });
 </script>
 </body>
