@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Репетитор Плюс | Защищённая комната с видео и экраном</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0c1a2b 0%, #0a111f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Модальное окно авторизации */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+ backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .auth-card {
+            background: #13212ed9;
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 2rem 2rem 2.5rem;
+            width: 90%;
+            max-width: 440px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(72, 187, 255, 0.4);
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            color: #e2f0ff;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .role-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: #0a1923;
+            border-radius: 60px;
+            padding: 5px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #a0c4e0;
+            font-weight: bold;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+
+        .role-btn.active {
+            background: #1f6e8c;
+            color: white;
+            box-shadow: 0 2px 8px #0e4a60;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 18px;
+            margin: 12px 0;
+            background: #0e1f2c;
+            border: 1px solid #2f6080;
+            border-radius: 60px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .auth-input:focus {
+            border-color: #4aa3cc;
+            box-shadow: 0 0 0 2px #1f6e8c55;
+        }
+
+        .auth-btn {
+            background: #2b6e9e;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+
+        .auth-btn:hover {
+            background: #3a8bb8;
+            transform: translateY(-2px);
+        }
+
+        .error-msg {
+            color: #ffb4a2;
+            font-size: 0.8rem;
+            margin-top: 12px;
+        }
+
+        /* Основной интерфейс комнаты (изначально скрыт) */
+        .room-container {
+            max-width: 1600px;
+            width: 100%;
+            background: rgba(10, 20, 28, 0.75);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: none;
+        }
+
+        .participants-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .participant-card {
+            flex: 1;
+            min-width: 280px;
+            background: #07131ee6;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid #2c6e8f;
+            transition: all 0.2s;
+        }
+
+        .participant-header {
+            background: #0a1a28cc;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2c4c6e;
+        }
+
+        .participant-name {
+            font-weight: bold;
+            color: #d4edff;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .participant-status {
+            font-size: 0.7rem;
+            background: #1e3a4d;
+            padding: 4px 12px;
+            border-radius: 30px;
+            color: #aad4ff;
+        }
+
+        .video-wrapper {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .placeholder-video {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0f1a24;
+            color: #7c9eb3;
+            gap: 12px;
+            text-align: center;
+        }
+
+        .audio-indicator {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: #000000aa;
+            backdrop-filter: blur(4px);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .screen-share-area {
+            margin-top: 12px;
+            border-radius: 1.5rem;
+            background: #00000066;
+            border: 1px solid #3c6e8f;
+            overflow: hidden;
+        }
+
+        .screen-header {
+            background: #0f212e;
+            padding: 10px 18px;
+            font-weight: 600;
+            color: #b9e2ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .screen-container {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background: #000;
+        }
+
+        .screen-container video {
+            object-fit: contain;
+        }
+
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            margin: 20px 0 16px;
+            padding: 16px;
+            background: #0e1c28cc;
+            border-radius: 60px;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #2c4458;
+            color: white;
+        }
+
+        .btn-primary { background: #1f6e8c; }
+        .btn-primary:hover { background: #2b8bb0; transform: translateY(-2px); }
+        .btn-danger { background: #8b3c4a; }
+        .btn-success { background: #2a7f6e; }
+        .btn-warning { background: #b86b2c; }
+
+        .info-panel {
+            background: #0f1f2ad9;
+            border-radius: 1.2rem;
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            color: #c7e2f5;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .link-panel {
+            background: #07131c;
+            border-radius: 48px;
+            padding: 10px 18px;
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .link-input {
+            flex: 1;
+            background: #1c2e3c;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .copy-btn { background: #2c5a6e; padding: 8px 20px; }
+
+        @media (max-width: 800px) {
+            .participants-grid { flex-direction: column; }
+            .controls-bar { border-radius: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Модалка авторизации -->
+<div id="authModal" class="auth-overlay">
+    <div class="auth-card">
+        <h2>📚 Репетиторская комната</h2>
+        <div class="role-tabs">
+            <button id="teacherTabBtn" class="role-btn active">👨‍🏫 Учитель</button>
+            <button id="studentTabBtn" class="role-btn">👩‍🎓 Ученик</button>
+        </div>
+        <div id="authFormContainer">
+            <!-- Динамическая форма -->
+            <input type="text" id="loginInput" class="auth-input" placeholder="Логин">
+            <input type="password" id="passwordInput" class="auth-input" placeholder="Пароль">
+        </div>
+        <button id="submitAuthBtn" class="auth-btn">Войти в комнату</button>
+        <div id="authError" class="error-msg"></div>
+    </div>
+</div>
+
+<!-- Основной интерфейс комнаты -->
+<div id="roomContainer" class="room-container">
+    <div class="participants-grid">
+        <!-- Локальный участник -->
+        <div class="participant-card" id="localCard">
+            <div class="participant-header">
+                <div class="participant-name"><span>📷</span> <span id="localNameLabel">Вы</span></div>
+                <div class="participant-status" id="localStatus">🟢 Подключен</div>
+            </div>
+            <div class="video-wrapper">
+                <video id="localVideo" autoplay playsinline muted></video>
+                <div id="localPlaceholder" class="placeholder-video">🎥 Камера не активна</div>
+                <div class="audio-indicator" id="localAudioIndicator">🎤 Микрофон вкл</div>
+            </div>
+        </div>
+
+        <!-- Удалённый участник -->
+        <div class="participant-card" id="remoteCard">
+            <div class="participant-header">
+                <div class="participant-name"><span>👥</span> Собеседник</div>
+                <div class="participant-status" id="remoteStatus">⏳ Ожидание</div>
+            </div>
+            <div class="video-wrapper">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <div id="remotePlaceholder" class="placeholder-video">🕒 Ожидание подключения...</div>
+                <div class="audio-indicator" id="remoteAudioIndicator">🔇 Нет звука</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экранная область -->
+    <div class="screen-share-area" id="screenArea" style="display: none;">
+        <div class="screen-header">🖥️ Демонстрация экрана (транслируется)</div>
+        <div class="screen-container">
+            <video id="screenVideo" autoplay playsinline></video>
+            <div id="screenPlaceholder" class="placeholder-video">📺 Экран не транслируется</div>
+        </div>
+    </div>
+
+    <div class="controls-bar">
+        <button id="toggleCameraBtn" class="btn btn-primary">📷 Выкл камеру</button>
+        <button id="toggleMicBtn" class="btn btn-primary">🎤 Выкл микрофон</button>
+        <button id="startScreenBtn" class="btn btn-success">🖥️ Включить экран</button>
+        <button id="stopScreenBtn" class="btn btn-warning" disabled>🛑 Остановить экран</button>
+    </div>
+
+    <div class="info-panel" id="infoMessage">
+        💡 <strong>Правила комнаты:</strong> Учитель (логин:2347 пароль:2203) создаёт сессию. Ученик входит с любыми данными. После входа — автоматический вызов, камера+микрофон. Экран виден обоим.
+    </div>
+
+    <div class="link-panel">
+        <input type="text" id="roomLinkInput" class="link-input" readonly>
+        <button id="copyLinkBtn" class="copy-btn">📋 Скопировать ссылку</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+<script>
+    // -------------------- АВТОРИЗАЦИЯ --------------------
+    const TEACHER_LOGIN = "2347";
+    const TEACHER_PASS = "2203";
+    
+    let currentRole = "teacher"; // teacher / student
+    let authenticated = false;
+    let localStream = null;
+    let screenStream = null;
+    let peer = null;
+    let currentCall = null;
+    let currentScreenCall = null;
+    let remoteStream = null;
+    let roomId = null;
+    let isScreenSharing = false;
+    let localCameraEnabled = true;
+    let localMicEnabled = true;
+    let myRole = null;     // 'teacher' или 'student'
+    let peerIdForCall = null;
+
+    // DOM auth
+    const authModal = document.getElementById('authModal');
+    const teacherTab = document.getElementById('teacherTabBtn');
+    const studentTab = document.getElementById('studentTabBtn');
+    const authFormContainer = document.getElementById('authFormContainer');
+    const loginInput = document.getElementById('loginInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const submitAuth = document.getElementById('submitAuthBtn');
+    const authError = document.getElementById('authError');
+    
+    // DOM room
+    const roomContainer = document.getElementById('roomContainer');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const localPlaceholder = document.getElementById('localPlaceholder');
+    const remotePlaceholder = document.getElementById('remotePlaceholder');
+    const localStatusSpan = document.getElementById('localStatus');
+    const remoteStatusSpan = document.getElementById('remoteStatus');
+    const localAudioIndicator = document.getElementById('localAudioIndicator');
+    const remoteAudioIndicator = document.getElementById('remoteAudioIndicator');
+    const screenArea = document.getElementById('screenArea');
+    const screenVideo = document.getElementById('screenVideo');
+    const screenPlaceholder = document.getElementById('screenPlaceholder');
+    const startScreenBtn = document.getElementById('startScreenBtn');
+    const stopScreenBtn = document.getElementById('stopScreenBtn');
+    const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+    const toggleMicBtn = document.getElementById('toggleMicBtn');
+    const roomLinkInput = document.getElementById('roomLinkInput');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const localNameLabel = document.getElementById('localNameLabel');
+    const infoDiv = document.getElementById('infoMessage');
+
+    // Переключение ролей в модалке
+    function setRole(role) {
+        currentRole = role;
+        if (role === 'teacher') {
+            loginInput.placeholder = "Логин (2347)";
+            passwordInput.placeholder = "Пароль (2203)";
+            loginInput.value = "";
+            passwordInput.value = "";
+            teacherTab.classList.add('active');
+            studentTab.classList.remove('active');
+        } else {
+            loginInput.placeholder = "Любой логин";
+            passwordInput.placeholder = "Любой пароль";
+            loginInput.value = "";
+            passwordInput.value = "";
+            studentTab.classList.add('active');
+            teacherTab.classList.remove('active');
+        }
+        authError.innerText = "";
+    }
+
+    teacherTab.addEventListener('click', () => setRole('teacher'));
+    studentTab.addEventListener('click', () => setRole('student'));
+
+    // Авторизация
+    submitAuth.addEventListener('click', () => {
+        const login = loginInput.value.trim();
+        const password = passwordInput.value.trim();
+        if (currentRole === 'teacher') {
+            if (login === TEACHER_LOGIN && password === TEACHER_PASS) {
+                authenticated = true;
+                myRole = 'teacher';
+                initRoomAndPeer();
+            } else {
+                authError.innerText = "❌ Неверный логин или пароль учителя. (логин:2347 пароль:2203)";
+            }
+        } else {
+            // ученик — любые данные, но не пустые
+            if (login === "" || password === "") {
+                authError.innerText = "❌ Пожалуйста, введите логин и пароль (любые) для входа как ученик";
+                return;
+            }
+            authenticated = true;
+            myRole = 'student';
+            initRoomAndPeer();
+        }
+    });
+
+    // Глобальная инициализация после авторизации
+    async function initRoomAndPeer() {
+        authModal.style.display = 'none';
+        roomContainer.style.display = 'block';
+        localNameLabel.innerText = myRole === 'teacher' ? '👨‍🏫 Учитель' : '👩‍🎓 Ученик';
+        
+        // Генерация ID комнаты на основе роли: учитель создаёт комнату, ученик подключается
+        if (myRole === 'teacher') {
+            // Учитель создаёт уникальную комнату
+            roomId = "room_" + Math.random().toString(36).substring(2, 10);
+            const url = new URL(window.location.href);
+            url.searchParams.set('room', roomId);
+            window.history.pushState({}, '', url);
+            roomLinkInput.value = window.location.href;
+            showInfo(`✅ Комната создана! Отправьте эту ссылку ученику.`, false);
+            initPeerAsTeacher();
+        } else {
+            // Ученик: берёт roomId из URL или просит ввести вручную? упростим: из URL параметра
+            const urlParams = new URLSearchParams(window.location.search);
+            let invitedRoom = urlParams.get('room');
+            if (!invitedRoom) {
+                // если нет комнаты, предложим ввод
+                const manualRoom = prompt("Введите ID комнаты, который дал учитель (или вставьте полную ссылку):");
+                if (manualRoom) {
+                    if (manualRoom.includes('room=')) {
+                        const match = manualRoom.match(/room=([^&]+)/);
+                        if (match) invitedRoom = match[1];
+                        else invitedRoom = manualRoom;
+                    } else {
+                        invitedRoom = manualRoom;
+                    }
+                }
+                if (!invitedRoom) {
+                    alert("Нет ID комнаты. Перезагрузитесь и получите ссылку от учителя.");
+                    location.reload();
+                    return;
+                }
+                // обновим URL
+                const newUrl = `${window.location.origin}${window.location.pathname}?room=${invitedRoom}`;
+                window.history.pushState({}, '', newUrl);
+                roomLinkInput.value = newUrl;
+            } else {
+                roomLinkInput.value = window.location.href;
+            }
+            roomId = invitedRoom;
+            showInfo(`🔗 Подключение к комнате: ${roomId}`, false);
+            initPeerAsStudent();
+        }
+    }
+
+    // ---------- PeerJS логика ----------
+    async function initPeerAsTeacher() {
+        peer = new Peer(roomId, { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } });
+        peer.on('open', async (id) => {
+            console.log("Teacher peer ready:", id);
+            await getLocalMedia();
+            // Учитель ждёт звонка от ученика
+            peer.on('call', (call) => {
+                if (call.metadata && call.metadata.type === 'screen') {
+                    // поток экрана от ученика (не нужно, ученик не транслирует экран обычно)
+                    return;
+                }
+                // основной звонок видео/аудио от ученика
+                if (localStream) {
+                    call.answer(localStream);
+                    call.on('stream', (remote) => {
+                        attachRemoteStream(remote);
+                    });
+                    currentCall = call;
+                } else {
+                    waitForLocalThenAnswer(call);
+                }
+            });
+        });
+        peer.on('error', (err) => showInfo(`Ошибка: ${err.message}`, true));
+    }
+
+    async function initPeerAsStudent() {
+        // Ученик использует другой peerId (не может занять roomId, т.к. учитель уже использует)
+        const studentPeerId = "student_" + Math.random().toString(36).substring(2, 10);
+        peer = new Peer(studentPeerId, { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } });
+        peer.on('open', async (id) => {
+            console.log("Student peer ready:", id);
+            await getLocalMedia();
+            // Звоним учителю по roomId
+            if (localStream) {
+                const call = peer.call(roomId, localStream);
+                call.on('stream', (remote) => {
+                    attachRemoteStream(remote);
+                });
+                currentCall = call;
+                // Обработка экрана от учителя
+                peer.on('call', (screenCall) => {
+                    if (screenCall.metadata && screenCall.metadata.type === 'screen') {
+                        screenCall.answer();
+                        screenCall.on('stream', (screenStreamRemote) => {
+                            showScreenShareUI(true);
+                            screenVideo.srcObject = screenStreamRemote;
+                            screenPlaceholder.style.display = 'none';
+                        });
+                        screenCall.on('close', () => {
+                            showScreenShareUI(false);
+                            screenVideo.srcObject = null;
+                        });
+                        currentScreenCall = screenCall;
+                    }
+                });
+            } else {
+                waitForLocalThenCallTeacher();
+            }
+        });
+        peer.on('error', (err) => showInfo(`Ошибка: ${err.message}`, true));
+    }
+
+    function waitForLocalThenAnswer(call) {
+        const interval = setInterval(() => {
+            if (localStream) {
+                clearInterval(interval);
+                call.answer(localStream);
+                call.on('stream', (remote) => attachRemoteStream(remote));
+                currentCall = call;
+            }
+        }, 300);
+    }
+
+    function waitForLocalThenCallTeacher() {
+        const interval = setInterval(() => {
+            if (localStream && peer && roomId) {
+                clearInterval(interval);
+                const call = peer.call(roomId, localStream);
+                call.on('stream', (remote) => attachRemoteStream(remote));
+                currentCall = call;
+            }
+        }, 300);
+    }
+
+    async function getLocalMedia() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localStream = stream;
+            localVideo.srcObject = stream;
+            localPlaceholder.style.display = 'none';
+            localCameraEnabled = true;
+            localMicEnabled = true;
+            updateLocalMicUI();
+            updateLocalVideoUI();
+            localAudioIndicator.innerHTML = '🎤 Микрофон включён';
+        } catch (err) {
+            showInfo("Ошибка доступа к камере/микрофону: " + err.message, true);
+            localPlaceholder.innerHTML = "⚠️ Нет доступа к медиа";
+        }
+    }
+
+    function attachRemoteStream(stream) {
+        remoteStream = stream;
+        remoteVideo.srcObject = stream;
+        remotePlaceholder.style.display = 'none';
+        remoteStatusSpan.innerHTML = '🟢 В сети (видео)';
+        monitorRemoteAudio(stream);
+        // Логика отображения "если экран выключен, второй видит первого на весь экран"
+        // Применяется при изменении состояния экрана
+        applyFullscreenIfNeeded();
+    }
+
+    function monitorRemoteAudio(stream) {
+        const audioTracks = stream.getAudioTracks();
+        const hasAudio = audioTracks.length > 0 && audioTracks[0].enabled;
+        updateRemoteAudioIndicator(hasAudio);
+        audioTracks.forEach(t => {
+            t.onended = () => updateRemoteAudioIndicator(false);
+            t.onmute = () => updateRemoteAudioIndicator(false);
+            t.onunmute = () => updateRemoteAudioIndicator(true);
+        });
+    }
+
+    function updateRemoteAudioIndicator(active) {
+        if (active) {
+            remoteAudioIndicator.innerHTML = '🎤 Микрофон собеседника активен';
+            remoteAudioIndicator.style.backgroundColor = '#0a4b3ecc';
+        } else {
+            remoteAudioIndicator.innerHTML = '🔇 Микрофон выключен';
+            remoteAudioIndicator.style.backgroundColor = '#000000aa';
+        }
+    }
+
+    // Управление камерой и микрофоном локально
+    function updateLocalVideoUI() {
+        if (localStream) {
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) videoTrack.enabled = localCameraEnabled;
+            if (!localCameraEnabled) {
+                localPlaceholder.style.display = 'flex';
+                localPlaceholder.innerHTML = '📷 Камера выключена';
+            } else {
+                localPlaceholder.style.display = 'none';
+            }
+            toggleCameraBtn.innerHTML = localCameraEnabled ? '📷 Выкл камеру' : '📷 Вкл камеру';
+        }
+    }
+
+    function updateLocalMicUI() {
+        if (localStream) {
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) audioTrack.enabled = localMicEnabled;
+            localAudioIndicator.innerHTML = localMicEnabled ? '🎤 Микрофон включён' : '🔇 Микрофон выключен';
+            toggleMicBtn.innerHTML = localMicEnabled ? '🎤 Выкл микрофон' : '🎤 Вкл микрофон';
+        }
+    }
+
+    // Демонстрация экрана (только учитель)
+    async function startScreenShare() {
+        if (isScreenSharing) return;
+        if (myRole !== 'teacher') {
+            showInfo("Только учитель может демонстрировать экран!", true);
+            return;
+        }
+        try {
+            const screenStreamObj = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            screenStream = screenStreamObj;
+            isScreenSharing = true;
+            // Отправляем экран ученику (если есть соединение)
+            if (peer && currentCall) {
+                const screenCall = peer.call(roomId, screenStream, { metadata: { type: 'screen' } });
+                currentScreenCall = screenCall;
+                screenCall.on('close', () => stopScreenShare());
+            }
+            // Показываем локально
+            screenArea.style.display = 'block';
+            screenVideo.srcObject = screenStream;
+            screenPlaceholder.style.display = 'none';
+            startScreenBtn.disabled = true;
+            stopScreenBtn.disabled = false;
+            screenStreamObj.getVideoTracks()[0].onended = () => stopScreenShare();
+            showInfo("Экран транслируется", false);
+            applyFullscreenIfNeeded();
+        } catch (err) {
+            showInfo("Ошибка: " + err.message, true);
+        }
+    }
+
+    function stopScreenShare() {
+        if (screenStream) {
+            screenStream.getTracks().forEach(t => t.stop());
+            screenStream = null;
+        }
+        if (currentScreenCall) {
+            currentScreenCall.close();
+            currentScreenCall = null;
+        }
+        isScreenSharing = false;
+        screenArea.style.display = 'none';
+        screenVideo.srcObject = null;
+        startScreenBtn.disabled = false;
+        stopScreenBtn.disabled = true;
+        showInfo("Демонстрация экрана остановлена", false);
+        applyFullscreenIfNeeded();
+    }
+
+    function showScreenShareUI(active) {
+        if (active) {
+            screenArea.style.display = 'block';
+        } else {
+            screenArea.style.display = 'none';
+        }
+        applyFullscreenIfNeeded();
+    }
+
+    // Ключевая логика: если экран выключен -> второй видит первого на весь экран
+    function applyFullscreenIfNeeded() {
+        const remoteCard = document.getElementById('remoteCard');
+        const localCard = document.getElementById('localCard');
+        const screenActive = (screenArea.style.display === 'block');
+        // Для ученика: когда экран выключен, удалённый участник (учитель) занимает всё пространство
+        if (myRole === 'student') {
+            if (!screenActive && remoteStream) {
+                remoteCard.style.flex = '1 1 100%';
+                localCard.style.display = 'none';
+            } else {
+                remoteCard.style.flex = '1';
+                localCard.style.display = 'flex';
+            }
+        } else {
+            // Для учителя всегда показываем оба видео
+            remoteCard.style.flex = '1';
+            localCard.style.display = 'flex';
+        }
+    }
+
+    function showInfo(msg, isError) {
+        const original = infoDiv.innerHTML;
+        infoDiv.innerHTML = `<div style="background:${isError ? '#a13e3e80' : '#1f6f6e80'}; padding:6px 12px; border-radius:28px;">${msg}</div>`;
+        setTimeout(() => { if (infoDiv.innerHTML.includes(msg)) infoDiv.innerHTML = original; }, 4000);
+    }
+
+    // Обработчики кнопок
+    toggleCameraBtn.onclick = () => {
+        if (localStream) {
+            localCameraEnabled = !localCameraEnabled;
+            updateLocalVideoUI();
+        }
+    };
+    toggleMicBtn.onclick = () => {
+        if (localStream) {
+            localMicEnabled = !localMicEnabled;
+            updateLocalMicUI();
+        }
+    };
+    startScreenBtn.onclick = startScreenShare;
+    stopScreenBtn.onclick = stopScreenShare;
+    copyLinkBtn.onclick = () => {
+        roomLinkInput.select();
+        document.execCommand('copy');
+        showInfo("Ссылка скопирована!", false);
+    };
+
+    window.addEventListener('beforeunload', () => {
+        if (localStream) localStream.getTracks().forEach(t => t.stop());
+        if (screenStream) screenStream.getTracks().forEach(t => t.stop());
+        if (currentCall) currentCall.close();
+        if (peer) peer.destroy();
+    });
+</script>
+</body>
+</html>
