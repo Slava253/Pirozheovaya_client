@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Онлайн-заказ — Ресторан</title>
+<title>Пирожковая 7 — Онлайн-заказ</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -16,8 +16,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .hidden{display:none !important}
 
 header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 20px;position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px}
-.brand{font-weight:800;font-size:20px;letter-spacing:-.3px}
-.brand small{display:block;font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0}
+.logo-area{display:flex;align-items:center;gap:10px}
+.logo-svg{width:44px;height:44px;fill:none;stroke:#7f5af0;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.brand{font-weight:800;font-size:20px;letter-spacing:-.3px;line-height:1.1}
+.brand small{display:block;font-weight:600;font-size:11px;color:var(--muted);letter-spacing:0;margin-top:2px}
 .spacer{flex:1}
 .conn{font-size:12px;font-weight:600;color:var(--muted)}
 .user-phone{font-size:13px;font-weight:600;color:var(--text);background:var(--bg);padding:7px 12px;border-radius:10px;border:1px solid var(--line)}
@@ -28,7 +30,8 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 
 .login-wrap{min-height:calc(100vh - 80px);display:flex;align-items:center;justify-content:center;padding:20px}
 .login-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:32px 26px;max-width:420px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.05)}
-.login-icon{font-size:48px;text-align:center;margin-bottom:12px}
+.login-icon{display:flex;justify-content:center;margin-bottom:12px}
+.login-icon svg{width:80px;height:80px;fill:none;stroke:#7f5af0;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .login-card h1{font-size:24px;font-weight:800;text-align:center;margin-bottom:8px;letter-spacing:-.5px}
 .login-card p{color:var(--muted);text-align:center;font-size:14px;margin-bottom:24px;line-height:1.5}
 .phone-input{width:100%;padding:16px 18px;border:2px solid var(--line);background:var(--bg);border-radius:14px;font-size:18px;font-family:inherit;text-align:center;letter-spacing:1px;outline:none;transition:.15s;font-weight:600}
@@ -51,14 +54,19 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 .menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:.18s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.06);border-color:#d9cdb9}
+.card.out-of-stock{opacity:.7}
 .card-img{height:110px;background:linear-gradient(135deg,#f5e9d6,#ecd9bd);display:flex;align-items:center;justify-content:center;font-size:44px}
 .card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
 .card-name{font-weight:700;font-size:15px;line-height:1.3}
+.card-stock{font-size:12px;font-weight:600;color:var(--green)}
+.card-stock.low{color:var(--amber)}
+.card-stock.zero{color:var(--red)}
 .card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
 .card-price{font-weight:800;color:var(--accent);font-size:16px}
 .card-add{background:var(--accent);border:none;color:#fff;font-weight:700;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px;transition:.15s;font-family:inherit}
 .card-add:hover{background:var(--accent2)}
 .card-add:active{transform:scale(.96)}
+.card-add:disabled{background:#e5e0d5;color:#a89b87;cursor:not-allowed;transform:none}
 .empty{color:var(--muted);text-align:center;padding:50px 20px;border:2px dashed var(--line);border-radius:16px;grid-column:1/-1;font-size:14px}
 
 .orders-section{margin-bottom:28px}
@@ -67,7 +75,7 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 .order-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
 .order-card.history{opacity:.75}
 .order-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.order-num{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.order-num{font-size:22px;font-weight:800;letter-spacing:-.5px;background:var(--bg);padding:2px 12px;border-radius:8px;border:1px solid var(--line)}
 .order-date{font-size:12px;color:var(--muted);margin-left:auto}
 .badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
 .badge.paid{background:var(--green-bg);color:var(--green)}
@@ -154,7 +162,31 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 <body>
 
 <header>
-  <div class="brand">🍽 Ресторан<small>онлайн-заказ · оплата при получении</small></div>
+  <div class="logo-area">
+    <svg class="logo-svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="18" r="6" />
+      <path d="M 50 12 Q 54 6 50 2 Q 46 6 50 12" />
+      <path d="M 56 18 Q 62 14 66 18 Q 62 22 56 18" />
+      <path d="M 44 18 Q 38 14 34 18 Q 38 22 44 18" />
+      <path d="M 50 24 Q 54 30 50 34 Q 46 30 50 24" />
+      <path d="M 30 25 Q 15 15 5 25 Q 15 30 30 25" />
+      <path d="M 70 25 Q 85 15 95 25 Q 85 30 70 25" />
+      <path d="M 35 45 L 65 45 L 55 85 L 45 85 L 52 55 L 35 55 Z" />
+      <path d="M 40 52 Q 45 58 42 65" />
+      <path d="M 48 62 Q 53 68 50 75" />
+      <path d="M 20 88 Q 50 92 80 88" />
+      <path d="M 25 90 Q 50 96 75 90" />
+      <path d="M 30 82 Q 35 75 40 82" />
+      <path d="M 40 84 Q 45 76 50 84" />
+      <path d="M 50 82 Q 55 75 60 82" />
+      <path d="M 60 84 Q 65 76 70 84" />
+      <path d="M 15 95 Q 25 92 35 95 T 55 95 T 75 95 T 95 95" />
+    </svg>
+    <div class="brand">
+      Пирожковая 7
+      <small>онлайн-заказ · оплата при получении</small>
+    </div>
+  </div>
   <div class="spacer"></div>
   <span class="conn" id="connStatus">● Подключение…</span>
   <span class="user-phone hidden" id="headerPhone"></span>
@@ -163,21 +195,41 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 
 <div id="login-view" class="login-wrap hidden">
   <div class="login-card">
-    <div class="login-icon">📱</div>
+    <div class="login-icon">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="18" r="6" />
+        <path d="M 50 12 Q 54 6 50 2 Q 46 6 50 12" />
+        <path d="M 56 18 Q 62 14 66 18 Q 62 22 56 18" />
+        <path d="M 44 18 Q 38 14 34 18 Q 38 22 44 18" />
+        <path d="M 50 24 Q 54 30 50 34 Q 46 30 50 24" />
+        <path d="M 30 25 Q 15 15 5 25 Q 15 30 30 25" />
+        <path d="M 70 25 Q 85 15 95 25 Q 85 30 70 25" />
+        <path d="M 35 45 L 65 45 L 55 85 L 45 85 L 52 55 L 35 55 Z" />
+        <path d="M 40 52 Q 45 58 42 65" />
+        <path d="M 48 62 Q 53 68 50 75" />
+        <path d="M 20 88 Q 50 92 80 88" />
+        <path d="M 25 90 Q 50 96 75 90" />
+        <path d="M 30 82 Q 35 75 40 82" />
+        <path d="M 40 84 Q 45 76 50 84" />
+        <path d="M 50 82 Q 55 75 60 82" />
+        <path d="M 60 84 Q 65 76 70 84" />
+        <path d="M 15 95 Q 25 92 35 95 T 55 95 T 75 95 T 95 95" />
+      </svg>
+    </div>
     <h1>Вход по номеру</h1>
     <p>Введите номер телефона, чтобы оформлять заказы и отслеживать их статус</p>
     <input id="phoneInput" type="tel" class="phone-input" placeholder="+7 (___) ___-__-__" autocomplete="tel">
     <button class="login-btn" onclick="login()">Войти</button>
     <div class="login-error" id="loginError"></div>
     <div class="login-note">
-      Ваш номер нужен только для связи по заказу и получения электронного чека. Никаких SMS.
+      Ваш номер нужен для связи по заказу и получения электронного чека.
     </div>
   </div>
 </div>
 
 <main id="app-view" class="hidden">
   <div class="tabs">
-    <button class="tab active" data-tab="menu" onclick="switchTab('menu')">🍕 Меню</button>
+    <button class="tab active" data-tab="menu" onclick="switchTab('menu')">🍕 Витрина</button>
     <button class="tab" data-tab="orders" onclick="switchTab('orders')">
       📋 Мои заказы <span class="tab-count hidden" id="ordersCount">0</span>
     </button>
@@ -185,8 +237,8 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 
   <section id="tab-menu">
     <div class="hero">
-      <h1>Меню</h1>
-      <p>Выберите блюда — оплата при получении в ресторане</p>
+      <h1>Свежая выпечка</h1>
+      <p>Выберите блюда — оплата при получении</p>
     </div>
     <div id="menu" class="menu"></div>
   </section>
@@ -234,9 +286,9 @@ main{max-width:1100px;margin:0 auto;padding:20px}
       <div class="check">✅</div>
       <h2>Заказ принят!</h2>
       <div>Ваш номер заказа</div>
-      <div class="num" id="successNum">№0</div>
+      <div class="num" id="successNum">№---</div>
       <div class="sub">
-        Оплата при получении в ресторане.<br>
+        Оплата при получении.<br>
         Назовите номер на кассе — мы уже готовим.
       </div>
       <div class="sum" id="successSum">0 ₽</div>
@@ -282,7 +334,7 @@ const db  = getDatabase(app);
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const PHONE_KEY = 'client_phone';
+const PHONE_KEY = 'client_phone_pirozhki';
 
 function toast(text){
   const el = document.createElement('div');
@@ -315,6 +367,20 @@ function formatPhone(digits){
   if(!digits || digits.length < 11) return digits || '';
   const d = digits.slice(1);
   return `+7 (${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6,8)}-${d.slice(8,10)}`;
+}
+
+// Генерация номера заказа: 3 цифры + буква
+function generateOrderNumber(existingOrders) {
+  const letters = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ';
+  for (let i = 0; i < 50; i++) {
+    const num = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const letter = letters[Math.floor(Math.random() * letters.length)];
+    const code = num + letter;
+    if (!existingOrders || !Object.values(existingOrders).some(o => o.num === code)) {
+      return code;
+    }
+  }
+  return Date.now().toString().slice(-4);
 }
 
 let myPhone = localStorage.getItem(PHONE_KEY) || '';
@@ -430,36 +496,55 @@ function processOrders(){
 }
 
 const EMOJI_MAP = {
-  'Эспрессо':'☕','Капучино':'☕','Чай':'🍵','Круассан':'🥐',
-  'Сэндвич':'🥪','Пицца Маргарита':'🍕','Салат Цезарь':'🥗',
-  'Чизкейк':'🍰','Вода 0.5':'💧','Лимонад':'🥤'
+  'Пирожок с мясом':'🥟','Пирожок с картошкой':'🥔','Пирожок с капустой':'🥬',
+  'Пирожок с яблоком':'🍎','Беляш':'🥩','Чебурек':'🥟','Самса':'🥐',
+  'Чай':'🍵','Кофе':'☕','Компот':'🍹'
 };
-function iconFor(name){ return EMOJI_MAP[name] || '🍽'; }
+function iconFor(name){
+  if(EMOJI_MAP[name]) return EMOJI_MAP[name];
+  if(name.toLowerCase().includes('пирож')) return '🥟';
+  if(name.toLowerCase().includes('чай')) return '🍵';
+  if(name.toLowerCase().includes('кофе')) return '☕';
+  return '🍽';
+}
 
 function renderMenu(){
   const entries = Object.entries(products);
   const box = $('menu');
   if(!entries.length){
-    box.innerHTML = '<div class="empty">Меню пока пустое. Загляните позже!</div>';
+    box.innerHTML = '<div class="empty">Витрина пока пуста. Загляните позже!</div>';
     return;
   }
-  box.innerHTML = entries.map(([key, p]) => `
-    <div class="card">
+  box.innerHTML = entries.map(([key, p]) => {
+    const stock = p.stock !== undefined ? p.stock : 999;
+    const isOut = stock === 0;
+    let stockClass = '';
+    if(isOut) stockClass = 'zero';
+    else if(stock < 5) stockClass = 'low';
+
+    return `
+    <div class="card ${isOut ? 'out-of-stock' : ''}">
       <div class="card-img">${iconFor(p.name)}</div>
       <div class="card-body">
         <div class="card-name">${esc(p.name)}</div>
+        <div class="card-stock ${stockClass}">${isOut ? 'Нет в наличии' : `В наличии: ${stock === 999 ? 'много' : stock + ' шт.'}`}</div>
         <div class="card-foot">
           <div class="card-price">${fmt(p.price)}</div>
-          <button class="card-add" onclick="addToCart('${key}')">В корзину</button>
+          <button class="card-add" onclick="addToCart('${key}')" ${isOut ? 'disabled' : ''}>В корзину</button>
         </div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function addToCart(key){
   const p = products[key];
   if(!p) return;
+  const stock = p.stock !== undefined ? p.stock : 999;
+  const inCart = cart.find(i => i.productKey === key)?.qty || 0;
+  
+  if(inCart >= stock){ toast('На складе больше нет'); return; }
+
   const ex = cart.find(i => i.productKey === key);
   if(ex) ex.qty++;
   else cart.push({productKey:key, name:p.name, price:p.price, qty:1});
@@ -468,8 +553,14 @@ function addToCart(key){
 }
 
 function changeQty(idx, delta){
-  cart[idx].qty += delta;
-  if(cart[idx].qty <= 0) cart.splice(idx,1);
+  const item = cart[idx];
+  const p = products[item.productKey];
+  const stock = p && p.stock !== undefined ? p.stock : 999;
+
+  if(delta > 0 && item.qty >= stock){ toast('На складе больше нет'); return; }
+
+  item.qty += delta;
+  if(item.qty <= 0) cart.splice(idx,1);
   renderCart();
 }
 function removeItem(idx){ cart.splice(idx,1); renderCart(); }
@@ -523,8 +614,27 @@ async function placeOrder(){
   const total = cartTotal();
 
   try {
-    const txn = await runTransaction(ref(db, 'settings/nextOrderId'), cur => (cur || 0) + 1);
-    const num = txn.snapshot.val();
+    // Списываем остатки
+    for(let item of items){
+      const prodEntry = Object.entries(products).find(([,p]) => p.name === item.name);
+      if(prodEntry){
+        const [prodKey, prod] = prodEntry;
+        const currentStock = prod.stock !== undefined ? prod.stock : 999;
+        if(currentStock !== 999) {
+          await runTransaction(ref(db, `products/${prodKey}/stock`), cur => {
+            let val = cur !== null ? cur : 999;
+            if(val !== 999) {
+              val -= item.qty;
+              return val < 0 ? 0 : val;
+            }
+            return val;
+          });
+        }
+      }
+    }
+
+    // Генерируем случайный номер
+    const num = generateOrderNumber(allOrders);
 
     const orderRef = push(ref(db, 'orders'));
     await set(orderRef, {
@@ -641,8 +751,21 @@ function receiptHTML(o){
   const dateStr = d.toLocaleString('ru-RU', {
     day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
   });
+  
+  let payInfo = '';
+  if(o.paid) {
+    if(o.payMethod === 'cash'){
+      payInfo = `
+        <div class="r-item"><span>Наличные:</span><span>${o.cashReceived} ₽</span></div>
+        <div class="r-item"><span>Сдача:</span><span>${o.cashChange} ₽</span></div>
+      `;
+    } else {
+      payInfo = `<div class="r-item"><span>Оплата:</span><span>Картой</span></div>`;
+    }
+  }
+
   return `
-    <div class="r-title">РЕСТОРАН</div>
+    <div class="r-title">ПИРОЖКОВАЯ 7</div>
     <div class="r-sub">Чек № ${o.num}</div>
     <div class="r-sub">${formatPhone(o.phone)}</div>
     <div class="r-line"></div>
@@ -650,6 +773,7 @@ function receiptHTML(o){
     <div class="r-line"></div>
     <div class="r-item r-total"><span>ИТОГО</span><span>${o.total} ₽</span></div>
     <div class="r-line"></div>
+    ${payInfo}
     <div class="r-item"><span>Онлайн-заказ</span><span>Оплачено</span></div>
     <div class="r-item"><span>${dateStr}</span><span></span></div>
     <div class="r-thanks">Спасибо за заказ!</div>
