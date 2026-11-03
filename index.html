@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Пирожковая 7 — Онлайн-заказ</title>
+<title>Пирожковая: я7 (семья) — Онлайн-заказ</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -18,8 +18,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 20px;position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px}
 .logo-area{display:flex;align-items:center;gap:10px}
 .logo-svg{width:44px;height:44px;fill:none;stroke:#7f5af0;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.brand{font-weight:800;font-size:20px;letter-spacing:-.3px;line-height:1.1}
-.brand small{display:block;font-weight:600;font-size:11px;color:var(--muted);letter-spacing:0;margin-top:2px}
+.brand{font-weight:800;font-size:18px;letter-spacing:-.3px;line-height:1.1}
+.brand .y7{color:#7f5af0}
+.brand small{display:block;font-weight:600;font-size:11px;color:var(--muted);letter-spacing:0;margin-top:3px}
 .spacer{flex:1}
 .conn{font-size:12px;font-weight:600;color:var(--muted)}
 .user-phone{font-size:13px;font-weight:600;color:var(--text);background:var(--bg);padding:7px 12px;border-radius:10px;border:1px solid var(--line)}
@@ -140,7 +141,7 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 .success .sum{display:inline-block;background:var(--bg);border-radius:12px;padding:10px 18px;font-weight:700;font-size:16px;margin-bottom:20px}
 
 .receipt{background:#fff;color:#111;border-radius:10px;padding:20px 18px;font-family:'Courier New',monospace;font-size:13px;line-height:1.5;border:1px solid #eee}
-.r-title{text-align:center;font-weight:800;font-size:17px;letter-spacing:2px}
+.r-title{text-align:center;font-weight:800;font-size:16px;letter-spacing:1px}
 .r-sub{text-align:center;font-size:13px;margin-top:2px}
 .r-line{border-top:1px dashed #999;margin:10px 0}
 .r-item{display:flex;justify-content:space-between;gap:10px}
@@ -183,8 +184,8 @@ main{max-width:1100px;margin:0 auto;padding:20px}
       <path d="M 15 95 Q 25 92 35 95 T 55 95 T 75 95 T 95 95" />
     </svg>
     <div class="brand">
-      Пирожковая 7
-      <small>онлайн-заказ · оплата при получении</small>
+      Пирожковая: <span class="y7">я7</span>
+      <small>(семья) · онлайн-заказ</small>
     </div>
   </div>
   <div class="spacer"></div>
@@ -765,7 +766,7 @@ function receiptHTML(o){
   }
 
   return `
-    <div class="r-title">ПИРОЖКОВАЯ 7</div>
+    <div class="r-title">ПИРОЖКОВАЯ: Я7 (СЕМЬЯ)</div>
     <div class="r-sub">Чек № ${o.num}</div>
     <div class="r-sub">${formatPhone(o.phone)}</div>
     <div class="r-line"></div>
