@@ -36,14 +36,12 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 .card-add:active{transform:scale(.96)}
 .empty{color:var(--muted);text-align:center;padding:60px 20px;border:2px dashed var(--line);border-radius:16px;grid-column:1/-1}
 
-/* Плавающая корзина */
 .fab{position:fixed;left:20px;right:20px;bottom:20px;background:var(--accent);color:#fff;border:none;border-radius:16px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:16px;box-shadow:0 8px 30px rgba(194,65,12,.4);cursor:pointer;z-index:60;transition:.2s;font-family:inherit}
 .fab:hover{background:var(--accent2)}
 .fab.hidden{transform:translateY(120%);opacity:0;pointer-events:none}
 .fab .fab-l{display:flex;align-items:center;gap:10px}
 .fab .badge{background:rgba(255,255,255,.25);border-radius:10px;padding:3px 10px;font-size:14px}
 
-/* Модалка */
 .modal{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0}
 @media(min-width:600px){.modal{align-items:center;padding:20px}}
 .modal.hidden{display:none}
@@ -74,7 +72,6 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 .btn.block{width:100%;padding:16px;font-size:16px}
 .note-text{font-size:13px;color:var(--muted);text-align:center;margin-top:10px}
 
-/* Экран успеха */
 .success{text-align:center;padding:20px 0 10px}
 .success .check{font-size:64px;line-height:1;margin-bottom:8px}
 .success h2{font-size:24px;font-weight:800;margin-bottom:8px}
@@ -192,6 +189,9 @@ let cart = [];
 onValue(ref(db, 'products'), snap => {
   products = snap.val() || {};
   renderMenu();
+  // Убираем из корзины удалённые товары
+  cart = cart.filter(i => products[i.productKey]);
+  renderCart();
 });
 
 /* ============== МЕНЮ ============== */
@@ -254,7 +254,6 @@ function renderCart(){
   const count = cartCount();
   const total = cartTotal();
 
-  // FAB
   const fab = $('fab');
   if(count > 0){
     fab.classList.remove('hidden');
@@ -264,7 +263,6 @@ function renderCart(){
     fab.classList.add('hidden');
   }
 
-  // Модалка корзины
   const list = $('cartList');
   if(!cart.length){
     list.innerHTML = '<div class="cart-empty">Корзина пуста</div>';
@@ -291,10 +289,7 @@ function openCart(){
   $('cart-modal').classList.remove('hidden');
 }
 function closeCart(){ $('cart-modal').classList.add('hidden'); }
-
-function closeSuccess(){
-  $('success-modal').classList.add('hidden');
-}
+function closeSuccess(){ $('success-modal').classList.add('hidden'); }
 
 /* ============== ОФОРМЛЕНИЕ ============== */
 async function placeOrder(){
@@ -303,11 +298,9 @@ async function placeOrder(){
   const total = cartTotal();
 
   try {
-    // Получаем атомарно номер заказа
     const txn = await runTransaction(ref(db, 'settings/nextOrderId'), cur => (cur || 0) + 1);
     const num = txn.snapshot.val();
 
-    // Создаём заказ
     const orderRef = push(ref(db, 'orders'));
     await set(orderRef, {
       num, items, total,
@@ -319,13 +312,11 @@ async function placeOrder(){
       createdAt: Date.now()
     });
 
-    // Показываем успех
     $('successNum').textContent = `№${num}`;
     $('successSum').textContent = fmt(total);
     closeCart();
     $('success-modal').classList.remove('hidden');
 
-    // Очищаем корзину
     cart = [];
     renderCart();
   } catch(e){
