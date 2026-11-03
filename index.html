@@ -3,8 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Пирожковая: я7 (семья) — Онлайн-заказ</title>
+<title>Пирожковая: я7 (семья)</title>
+
+<!-- PWA МЕТА-ТЕГИ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c2410c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="я7">
+<!-- Иконка для iOS (в идеале нужна png 180x180) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2MyNDEwYyIvPjxwYXRoIGQ9Ik0zNSA0NSBMNjUgNDUgTDU1IDg1IEw0NSA4NSBMNTIgNTUgTDM1IDU1IFoiIGZpbGw9IndoaXRlIi8+PC9zdmc+">
+
 <style>
+/* ... (стили без изменений, они уже есть в предыдущем ответе) ... */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#faf7f2;--card:#ffffff;--line:#ebe3d6;
@@ -26,6 +37,8 @@ header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 2
 .user-phone{font-size:13px;font-weight:600;color:var(--text);background:var(--bg);padding:7px 12px;border-radius:10px;border:1px solid var(--line)}
 .logout{background:none;border:1px solid var(--line);color:var(--muted);padding:7px 12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
 .logout:hover{color:var(--red);border-color:var(--red)}
+.install-btn{background:var(--accent);color:#fff;border:none;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:none}
+.install-btn:hover{background:var(--accent2)}
 
 main{max-width:1100px;margin:0 auto;padding:20px}
 
@@ -189,11 +202,13 @@ main{max-width:1100px;margin:0 auto;padding:20px}
     </div>
   </div>
   <div class="spacer"></div>
+  <button class="install-btn" id="installBtn" onclick="installPWA()">⬇ Установить</button>
   <span class="conn" id="connStatus">● Подключение…</span>
   <span class="user-phone hidden" id="headerPhone"></span>
   <button class="logout hidden" id="logoutBtn" onclick="logout()">Выйти</button>
 </header>
 
+<!-- ... (Остальной HTML без изменений, как в предыдущем ответе) ... -->
 <div id="login-view" class="login-wrap hidden">
   <div class="login-card">
     <div class="login-icon">
@@ -320,6 +335,36 @@ import {
   getDatabase, ref, onValue, set, push, runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+// --- SERVICE WORKER ДЛЯ PWA ---
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('SW registered:', reg);
+    }).catch(err => {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'block';
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then((choiceResult) => {
+    if (choiceResult.outcome === 'accepted') {
+      console.log('User accepted the A2HS prompt');
+    }
+    deferredPrompt = null;
+    document.getElementById('installBtn').style.display = 'none';
+  });
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
   authDomain: "bk-cashier.firebaseapp.com",
@@ -332,6 +377,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
+// ... (Остальной JS без изменений, как в предыдущем ответе) ...
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -370,7 +416,6 @@ function formatPhone(digits){
   return `+7 (${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6,8)}-${d.slice(8,10)}`;
 }
 
-// Генерация номера заказа: 3 цифры + буква
 function generateOrderNumber(existingOrders) {
   const letters = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ';
   for (let i = 0; i < 50; i++) {
@@ -615,7 +660,6 @@ async function placeOrder(){
   const total = cartTotal();
 
   try {
-    // Списываем остатки
     for(let item of items){
       const prodEntry = Object.entries(products).find(([,p]) => p.name === item.name);
       if(prodEntry){
@@ -634,7 +678,6 @@ async function placeOrder(){
       }
     }
 
-    // Генерируем случайный номер
     const num = generateOrderNumber(allOrders);
 
     const orderRef = push(ref(db, 'orders'));
@@ -795,7 +838,7 @@ Object.assign(window, {
   login, logout, switchTab,
   addToCart, changeQty, removeItem,
   openCart, closeCart, closeSuccess, closeReceipt, placeOrder,
-  openReceiptByKey
+  openReceiptByKey, installPWA
 });
 
 if(!myPhone) setTimeout(()=>$('phoneInput').focus(), 200);
