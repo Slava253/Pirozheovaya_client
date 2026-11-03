@@ -9,32 +9,89 @@
 :root{
   --bg:#faf7f2;--card:#ffffff;--line:#ebe3d6;
   --text:#2b2118;--muted:#8a7d6b;--accent:#c2410c;--accent2:#ea580c;
-  --green:#16a34a;--red:#dc2626;
+  --green:#16a34a;--green-bg:#dcfce7;--amber:#b45309;--amber-bg:#fef3c7;
+  --red:#dc2626;
 }
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;font-size:16px;padding-bottom:100px}
-header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 20px;position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px}
+.hidden{display:none !important}
+
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 20px;position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px}
 .brand{font-weight:800;font-size:20px;letter-spacing:-.3px}
 .brand small{display:block;font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0}
 .spacer{flex:1}
 .conn{font-size:12px;font-weight:600;color:var(--muted)}
-main{max-width:1100px;margin:0 auto;padding:20px}
-.hero{padding:24px 0 8px}
-.hero h1{font-size:32px;font-weight:800;letter-spacing:-.8px;margin-bottom:6px}
-.hero p{color:var(--muted);font-size:15px}
-@media(max-width:600px){.hero h1{font-size:24px}}
+.user-phone{font-size:13px;font-weight:600;color:var(--text);background:var(--bg);padding:7px 12px;border-radius:10px;border:1px solid var(--line)}
+.logout{background:none;border:1px solid var(--line);color:var(--muted);padding:7px 12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.logout:hover{color:var(--red);border-color:var(--red)}
 
-.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:20px}
+main{max-width:1100px;margin:0 auto;padding:20px}
+
+.login-wrap{min-height:calc(100vh - 80px);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:32px 26px;max-width:420px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.05)}
+.login-icon{font-size:48px;text-align:center;margin-bottom:12px}
+.login-card h1{font-size:24px;font-weight:800;text-align:center;margin-bottom:8px;letter-spacing:-.5px}
+.login-card p{color:var(--muted);text-align:center;font-size:14px;margin-bottom:24px;line-height:1.5}
+.phone-input{width:100%;padding:16px 18px;border:2px solid var(--line);background:var(--bg);border-radius:14px;font-size:18px;font-family:inherit;text-align:center;letter-spacing:1px;outline:none;transition:.15s;font-weight:600}
+.phone-input:focus{border-color:var(--accent);background:var(--card)}
+.login-btn{width:100%;margin-top:14px;background:var(--accent);border:none;color:#fff;padding:16px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit}
+.login-btn:hover{background:var(--accent2)}
+.login-btn:active{transform:scale(.98)}
+.login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;min-height:18px}
+.login-note{color:var(--muted);font-size:12px;text-align:center;margin-top:20px;line-height:1.5}
+
+.tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);padding:6px;border-radius:14px;margin-bottom:20px}
+.tab{flex:1;background:none;border:none;color:var(--muted);padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.tab.active{background:var(--accent);color:#fff}
+.tab .tab-count{background:rgba(255,255,255,.25);padding:2px 8px;border-radius:10px;font-size:12px;font-weight:800}
+.tab.active .tab-count{background:rgba(255,255,255,.3)}
+
+.hero{padding:4px 0 8px}
+.hero h1{font-size:26px;font-weight:800;letter-spacing:-.6px;margin-bottom:4px}
+.hero p{color:var(--muted);font-size:14px}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:.18s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.06);border-color:#d9cdb9}
-.card-img{height:120px;background:linear-gradient(135deg,#f5e9d6,#ecd9bd);display:flex;align-items:center;justify-content:center;font-size:44px}
+.card-img{height:110px;background:linear-gradient(135deg,#f5e9d6,#ecd9bd);display:flex;align-items:center;justify-content:center;font-size:44px}
 .card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
-.card-name{font-weight:700;font-size:16px;line-height:1.3}
+.card-name{font-weight:700;font-size:15px;line-height:1.3}
 .card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
-.card-price{font-weight:800;color:var(--accent);font-size:17px}
-.card-add{background:var(--accent);border:none;color:#fff;font-weight:700;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:14px;transition:.15s}
+.card-price{font-weight:800;color:var(--accent);font-size:16px}
+.card-add{background:var(--accent);border:none;color:#fff;font-weight:700;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px;transition:.15s;font-family:inherit}
 .card-add:hover{background:var(--accent2)}
 .card-add:active{transform:scale(.96)}
-.empty{color:var(--muted);text-align:center;padding:60px 20px;border:2px dashed var(--line);border-radius:16px;grid-column:1/-1}
+.empty{color:var(--muted);text-align:center;padding:50px 20px;border:2px dashed var(--line);border-radius:16px;grid-column:1/-1;font-size:14px}
+
+.orders-section{margin-bottom:28px}
+.orders-section h2{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px}
+.order-list{display:flex;flex-direction:column;gap:12px}
+.order-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.order-card.history{opacity:.75}
+.order-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.order-num{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.order-date{font-size:12px;color:var(--muted);margin-left:auto}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
+.badge.paid{background:var(--green-bg);color:var(--green)}
+.badge.unpaid{background:#fee2e2;color:var(--red)}
+.badge.cook{background:var(--amber-bg);color:var(--amber)}
+.badge.ready{background:var(--green-bg);color:var(--green)}
+.badge.issued{background:#e5e7eb;color:#374151}
+
+.status-steps{display:flex;gap:4px;margin:10px 0 14px}
+.step{flex:1;height:6px;border-radius:3px;background:#e5e0d5;transition:.3s}
+.step.done{background:var(--accent)}
+.step.ready{background:var(--green)}
+
+.order-items{list-style:none;display:flex;flex-direction:column;gap:5px;font-size:14px;color:#4a3e2e;margin-bottom:10px}
+.order-items li{display:flex;justify-content:space-between;gap:8px}
+.order-total{font-weight:800;display:flex;justify-content:space-between;font-size:15px;padding-top:10px;border-top:1px dashed var(--line);margin-bottom:12px}
+.order-actions{display:flex;gap:8px}
+.btn{background:var(--bg);border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;transition:.15s;font-family:inherit}
+.btn:hover{border-color:#c9bda7}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent2)}
+.btn.block{width:100%;padding:14px;font-size:15px}
+.btn.green{background:var(--green);border-color:var(--green);color:#fff}
+.btn.green:hover{filter:brightness(1.1)}
 
 .fab{position:fixed;left:20px;right:20px;bottom:20px;background:var(--accent);color:#fff;border:none;border-radius:16px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:16px;box-shadow:0 8px 30px rgba(194,65,12,.4);cursor:pointer;z-index:60;transition:.2s;font-family:inherit}
 .fab:hover{background:var(--accent2)}
@@ -56,20 +113,15 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 
 .cart-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;max-height:50vh;overflow:auto}
 .cart-row{display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:12px 14px}
-.cart-name{flex:1;font-weight:600;font-size:15px}
-.cart-price{font-weight:700;color:var(--accent);min-width:70px;text-align:right}
+.cart-name{flex:1;font-weight:600;font-size:14px}
+.cart-price{font-weight:700;color:var(--accent);min-width:70px;text-align:right;font-size:14px}
 .qty{display:flex;align-items:center;gap:8px}
-.qty button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:16px;font-weight:700;cursor:pointer;line-height:1}
+.qty button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:16px;font-weight:700;cursor:pointer;line-height:1;font-family:inherit}
 .qty button:hover{border-color:var(--accent);color:var(--accent)}
 .qty span{min-width:22px;text-align:center;font-weight:700}
 .cart-empty{color:var(--muted);text-align:center;padding:30px 0}
-.cart-total{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px dashed var(--line);margin-bottom:16px;font-size:17px}
+.cart-total{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px dashed var(--line);margin-bottom:16px;font-size:16px}
 .cart-total b{font-size:24px;color:var(--accent);font-weight:800}
-.btn{background:var(--bg);border:1px solid var(--line);color:var(--text);padding:12px 18px;border-radius:12px;cursor:pointer;font-size:15px;font-weight:700;transition:.15s;font-family:inherit}
-.btn:hover{border-color:#c9bda7}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.primary:hover{background:var(--accent2)}
-.btn.block{width:100%;padding:16px;font-size:16px}
 .note-text{font-size:13px;color:var(--muted);text-align:center;margin-top:10px}
 
 .success{text-align:center;padding:20px 0 10px}
@@ -79,9 +131,24 @@ main{max-width:1100px;margin:0 auto;padding:20px}
 .success .sub{color:var(--muted);font-size:15px;line-height:1.5;margin-bottom:20px}
 .success .sum{display:inline-block;background:var(--bg);border-radius:12px;padding:10px 18px;font-weight:700;font-size:16px;margin-bottom:20px}
 
+.receipt{background:#fff;color:#111;border-radius:10px;padding:20px 18px;font-family:'Courier New',monospace;font-size:13px;line-height:1.5;border:1px solid #eee}
+.r-title{text-align:center;font-weight:800;font-size:17px;letter-spacing:2px}
+.r-sub{text-align:center;font-size:13px;margin-top:2px}
+.r-line{border-top:1px dashed #999;margin:10px 0}
+.r-item{display:flex;justify-content:space-between;gap:10px}
+.r-total{font-weight:800;font-size:15px}
+.r-thanks{text-align:center;margin-top:14px;font-size:12px;color:#555}
+.receipt-actions{display:flex;gap:10px;margin-top:16px}
+.receipt-actions .btn{flex:1}
+
 #toasts{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:10px;z-index:300;width:calc(100% - 40px);max-width:400px}
-.toast{background:var(--card);border:1px solid var(--accent);color:var(--text);padding:14px 18px;border-radius:12px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.12);animation:slideDown .3s;text-align:center}
+.toast{background:var(--card);border:1px solid var(--accent);color:var(--text);padding:14px 18px;border-radius:12px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.12);animation:slideDown .3s;text-align:center;font-size:14px}
 @keyframes slideDown{from{transform:translateY(-20px);opacity:0}to{transform:none;opacity:1}}
+
+@media(min-width:900px){
+  body{padding-bottom:0}
+  .fab{left:auto;right:20px;width:auto;min-width:280px;bottom:30px}
+}
 </style>
 </head>
 <body>
@@ -90,14 +157,55 @@ main{max-width:1100px;margin:0 auto;padding:20px}
   <div class="brand">🍽 Ресторан<small>онлайн-заказ · оплата при получении</small></div>
   <div class="spacer"></div>
   <span class="conn" id="connStatus">● Подключение…</span>
+  <span class="user-phone hidden" id="headerPhone"></span>
+  <button class="logout hidden" id="logoutBtn" onclick="logout()">Выйти</button>
 </header>
 
-<main>
-  <div class="hero">
-    <h1>Меню</h1>
-    <p>Выберите блюда — оплата при получении в ресторане</p>
+<div id="login-view" class="login-wrap hidden">
+  <div class="login-card">
+    <div class="login-icon">📱</div>
+    <h1>Вход по номеру</h1>
+    <p>Введите номер телефона, чтобы оформлять заказы и отслеживать их статус</p>
+    <input id="phoneInput" type="tel" class="phone-input" placeholder="+7 (___) ___-__-__" autocomplete="tel">
+    <button class="login-btn" onclick="login()">Войти</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-note">
+      Ваш номер нужен только для связи по заказу и получения электронного чека. Никаких SMS.
+    </div>
   </div>
-  <div id="menu" class="menu"></div>
+</div>
+
+<main id="app-view" class="hidden">
+  <div class="tabs">
+    <button class="tab active" data-tab="menu" onclick="switchTab('menu')">🍕 Меню</button>
+    <button class="tab" data-tab="orders" onclick="switchTab('orders')">
+      📋 Мои заказы <span class="tab-count hidden" id="ordersCount">0</span>
+    </button>
+  </div>
+
+  <section id="tab-menu">
+    <div class="hero">
+      <h1>Меню</h1>
+      <p>Выберите блюда — оплата при получении в ресторане</p>
+    </div>
+    <div id="menu" class="menu"></div>
+  </section>
+
+  <section id="tab-orders" class="hidden">
+    <div id="activeOrdersSection" class="orders-section hidden">
+      <h2>Активные заказы</h2>
+      <div id="activeOrders" class="order-list"></div>
+    </div>
+
+    <div id="historyOrdersSection" class="orders-section hidden">
+      <h2>История заказов</h2>
+      <div id="historyOrders" class="order-list"></div>
+    </div>
+
+    <div id="emptyOrders" class="empty hidden">
+      У вас пока нет заказов. Загляните в меню!
+    </div>
+  </section>
 </main>
 
 <button id="fab" class="fab hidden" onclick="openCart()">
@@ -105,7 +213,6 @@ main{max-width:1100px;margin:0 auto;padding:20px}
   <span id="fabTotal">0 ₽</span>
 </button>
 
-<!-- МОДАЛКА КОРЗИНЫ -->
 <div id="cart-modal" class="modal hidden">
   <div class="modal-backdrop" onclick="closeCart()"></div>
   <div class="modal-body">
@@ -120,7 +227,6 @@ main{max-width:1100px;margin:0 auto;padding:20px}
   </div>
 </div>
 
-<!-- МОДАЛКА УСПЕХА -->
 <div id="success-modal" class="modal hidden">
   <div class="modal-backdrop"></div>
   <div class="modal-body">
@@ -139,6 +245,20 @@ main{max-width:1100px;margin:0 auto;padding:20px}
   </div>
 </div>
 
+<div id="receipt-modal" class="modal hidden">
+  <div class="modal-backdrop" onclick="closeReceipt()"></div>
+  <div class="modal-body">
+    <div class="modal-head">
+      <div class="modal-title">🧾 Электронный чек</div>
+      <button class="modal-close" onclick="closeReceipt()">×</button>
+    </div>
+    <div id="receipt" class="receipt"></div>
+    <div class="receipt-actions">
+      <button class="btn" onclick="closeReceipt()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 
 <script type="module">
@@ -147,7 +267,6 @@ import {
   getDatabase, ref, onValue, set, push, runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* ============== FIREBASE ============== */
 const firebaseConfig = {
   apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
   authDomain: "bk-cashier.firebaseapp.com",
@@ -160,20 +279,52 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-/* ============== УТИЛИТЫ ============== */
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PHONE_KEY = 'client_phone';
 
 function toast(text){
   const el = document.createElement('div');
   el.className = 'toast';
   el.textContent = text;
   $('toasts').appendChild(el);
-  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.4s'; setTimeout(()=>el.remove(),400); }, 3500);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.4s'; setTimeout(()=>el.remove(),400); }, 4000);
 }
 
-/* ============== ПОДКЛЮЧЕНИЕ ============== */
+function beep(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='sine'; o.frequency.value=880;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+    o.start(); o.stop(ctx.currentTime + 0.36);
+  }catch(e){}
+}
+
+function normalizePhone(raw){
+  let d = String(raw).replace(/\D/g, '');
+  if(d.length === 11 && d[0] === '8') d = '7' + d.slice(1);
+  if(d.length === 10) d = '7' + d;
+  return d.length === 11 ? d : '';
+}
+function formatPhone(digits){
+  if(!digits || digits.length < 11) return digits || '';
+  const d = digits.slice(1);
+  return `+7 (${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6,8)}-${d.slice(8,10)}`;
+}
+
+let myPhone = localStorage.getItem(PHONE_KEY) || '';
+let products = {};
+let allOrders = {};
+let myOrders = {};
+let cart = [];
+let seenPaid = new Set();
+let paidInitialized = false;
+
 onValue(ref(db, '.info/connected'), snap => {
   const online = snap.val();
   const el = $('connStatus');
@@ -181,28 +332,109 @@ onValue(ref(db, '.info/connected'), snap => {
   el.style.color = online ? 'var(--green)' : 'var(--red)';
 });
 
-/* ============== СОСТОЯНИЕ ============== */
-let products = {};
-let cart = [];
+function showLogin(){
+  $('login-view').classList.remove('hidden');
+  $('app-view').classList.add('hidden');
+  $('headerPhone').classList.add('hidden');
+  $('logoutBtn').classList.add('hidden');
+  $('fab').classList.add('hidden');
+  setTimeout(()=>$('phoneInput').focus(), 100);
+}
+function showApp(){
+  $('login-view').classList.add('hidden');
+  $('app-view').classList.remove('hidden');
+  $('headerPhone').classList.remove('hidden');
+  $('headerPhone').textContent = formatPhone(myPhone);
+  $('logoutBtn').classList.remove('hidden');
+  renderCart();
+}
 
-/* ============== СЛУШАТЕЛЬ МЕНЮ ============== */
+if(myPhone) showApp(); else showLogin();
+
+function login(){
+  const raw = $('phoneInput').value;
+  const normalized = normalizePhone(raw);
+  if(!normalized){
+    $('loginError').textContent = 'Введите корректный номер телефона';
+    return;
+  }
+  $('loginError').textContent = '';
+  myPhone = normalized;
+  localStorage.setItem(PHONE_KEY, normalized);
+  seenPaid = new Set();
+  paidInitialized = false;
+  processOrders();
+  showApp();
+  toast('Добро пожаловать!');
+}
+
+function logout(){
+  if(!confirm('Выйти из аккаунта?')) return;
+  localStorage.removeItem(PHONE_KEY);
+  myPhone = '';
+  cart = [];
+  seenPaid = new Set();
+  paidInitialized = false;
+  renderCart();
+  showLogin();
+}
+
+$('phoneInput').addEventListener('keypress', e => {
+  if(e.key === 'Enter') login();
+});
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+  $('tab-menu').classList.toggle('hidden', tab !== 'menu');
+  $('tab-orders').classList.toggle('hidden', tab !== 'orders');
+  if(tab === 'orders') renderOrders();
+}
+
 onValue(ref(db, 'products'), snap => {
   products = snap.val() || {};
   renderMenu();
-  // Убираем из корзины удалённые товары
   cart = cart.filter(i => products[i.productKey]);
   renderCart();
 });
 
-/* ============== МЕНЮ ============== */
+onValue(ref(db, 'orders'), snap => {
+  allOrders = snap.val() || {};
+  processOrders();
+});
+
+function processOrders(){
+  myOrders = {};
+  if(myPhone){
+    Object.entries(allOrders).forEach(([k, o]) => {
+      if(o.phone === myPhone) myOrders[k] = o;
+    });
+  }
+
+  if(!paidInitialized){
+    seenPaid = new Set(Object.entries(myOrders).filter(([,o]) => o.paid).map(([k]) => k));
+    paidInitialized = true;
+  } else {
+    Object.entries(myOrders).forEach(([k, o]) => {
+      if(o.paid && !seenPaid.has(k)){
+        seenPaid.add(k);
+        toast(`🧾 Чек по заказу №${o.num} готов`);
+        beep();
+        openReceipt(o);
+      }
+    });
+  }
+
+  renderOrders();
+  updateOrdersBadge();
+}
+
 const EMOJI_MAP = {
   'Эспрессо':'☕','Капучино':'☕','Чай':'🍵','Круассан':'🥐',
   'Сэндвич':'🥪','Пицца Маргарита':'🍕','Салат Цезарь':'🥗',
   'Чизкейк':'🍰','Вода 0.5':'💧','Лимонад':'🥤'
 };
-function iconFor(name){
-  return EMOJI_MAP[name] || '🍽';
-}
+function iconFor(name){ return EMOJI_MAP[name] || '🍽'; }
 
 function renderMenu(){
   const entries = Object.entries(products);
@@ -225,7 +457,6 @@ function renderMenu(){
   `).join('');
 }
 
-/* ============== КОРЗИНА ============== */
 function addToCart(key){
   const p = products[key];
   if(!p) return;
@@ -241,12 +472,7 @@ function changeQty(idx, delta){
   if(cart[idx].qty <= 0) cart.splice(idx,1);
   renderCart();
 }
-
-function removeItem(idx){
-  cart.splice(idx,1);
-  renderCart();
-}
-
+function removeItem(idx){ cart.splice(idx,1); renderCart(); }
 function cartTotal(){ return cart.reduce((s,i)=>s + i.price*i.qty, 0); }
 function cartCount(){ return cart.reduce((s,i)=>s + i.qty, 0); }
 
@@ -255,7 +481,7 @@ function renderCart(){
   const total = cartTotal();
 
   const fab = $('fab');
-  if(count > 0){
+  if(count > 0 && myPhone){
     fab.classList.remove('hidden');
     $('fabCount').textContent = count;
     $('fabTotal').textContent = fmt(total);
@@ -283,17 +509,16 @@ function renderCart(){
   $('cartTotal').textContent = fmt(total);
 }
 
-/* ============== МОДАЛКИ ============== */
 function openCart(){
-  if(!cart.length) return;
+  if(!cart.length || !myPhone) return;
   $('cart-modal').classList.remove('hidden');
 }
 function closeCart(){ $('cart-modal').classList.add('hidden'); }
 function closeSuccess(){ $('success-modal').classList.add('hidden'); }
+function closeReceipt(){ $('receipt-modal').classList.add('hidden'); }
 
-/* ============== ОФОРМЛЕНИЕ ============== */
 async function placeOrder(){
-  if(!cart.length) return;
+  if(!cart.length || !myPhone) return;
   const items = cart.map(i => ({name:i.name, price:i.price, qty:i.qty}));
   const total = cartTotal();
 
@@ -304,6 +529,7 @@ async function placeOrder(){
     const orderRef = push(ref(db, 'orders'));
     await set(orderRef, {
       num, items, total,
+      phone: myPhone,
       source: 'online',
       paid: false,
       ready: false,
@@ -324,11 +550,130 @@ async function placeOrder(){
   }
 }
 
-/* ============== ЭКСПОРТ ============== */
+function statusInfo(o){
+  if(o.issued) return {text: 'Выдан ✓', cls: 'issued', step: 4};
+  if(o.ready) return {text: 'Готов к выдаче', cls: 'ready', step: 3};
+  if(o.kitchenDone) return {text: 'Кухня готовит', cls: 'cook', step: 2};
+  return {text: 'Принят', cls: 'cook', step: 1};
+}
+
+function orderCardHTML(key, o, isHistory){
+  const st = statusInfo(o);
+  const d = new Date(o.createdAt);
+  const dateStr = d.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+
+  const stepsHTML = [1,2,3,4].map(n => {
+    let cls = '';
+    if(n < st.step) cls = (st.step === 3 || st.step === 4) ? 'ready' : 'done';
+    if(n === st.step) cls = (st.cls === 'ready' || st.cls === 'issued') ? 'ready' : 'done';
+    return `<div class="step ${cls}"></div>`;
+  }).join('');
+
+  return `
+    <div class="order-card ${isHistory ? 'history' : ''}">
+      <div class="order-head">
+        <span class="order-num">№${o.num}</span>
+        <span class="badge ${o.paid ? 'paid' : 'unpaid'}">${o.paid ? 'Оплачен' : 'Не оплачен'}</span>
+        <span class="badge ${st.cls}">${st.text}</span>
+        <span class="order-date">${dateStr}</span>
+      </div>
+
+      ${!isHistory ? `<div class="status-steps">${stepsHTML}</div>` : ''}
+
+      <ul class="order-items">
+        ${o.items.map(i=>`<li><span>${i.qty}× ${esc(i.name)}</span><span>${i.price*i.qty} ₽</span></li>`).join('')}
+      </ul>
+      <div class="order-total"><span>Итого</span><span>${fmt(o.total)}</span></div>
+      ${o.paid ? `
+        <div class="order-actions">
+          <button class="btn green" onclick="openReceiptByKey('${key}')">🧾 Открыть чек</button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderOrders(){
+  const entries = Object.entries(myOrders).sort((a,b) => b[1].createdAt - a[1].createdAt);
+  const active = entries.filter(([,o]) => !o.issued);
+  const history = entries.filter(([,o]) => o.issued);
+
+  const activeSec = $('activeOrdersSection');
+  const historySec = $('historyOrdersSection');
+  const emptySec = $('emptyOrders');
+
+  if(!entries.length){
+    activeSec.classList.add('hidden');
+    historySec.classList.add('hidden');
+    emptySec.classList.remove('hidden');
+    return;
+  }
+  emptySec.classList.add('hidden');
+
+  if(active.length){
+    activeSec.classList.remove('hidden');
+    $('activeOrders').innerHTML = active.map(([k,o]) => orderCardHTML(k, o, false)).join('');
+  } else {
+    activeSec.classList.add('hidden');
+  }
+
+  if(history.length){
+    historySec.classList.remove('hidden');
+    $('historyOrders').innerHTML = history.map(([k,o]) => orderCardHTML(k, o, true)).join('');
+  } else {
+    historySec.classList.add('hidden');
+  }
+}
+
+function updateOrdersBadge(){
+  const count = Object.values(myOrders).filter(o => !o.issued).length;
+  const badge = $('ordersCount');
+  if(count > 0){
+    badge.classList.remove('hidden');
+    badge.textContent = count;
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function receiptHTML(o){
+  const d = new Date(o.createdAt);
+  const dateStr = d.toLocaleString('ru-RU', {
+    day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
+  });
+  return `
+    <div class="r-title">РЕСТОРАН</div>
+    <div class="r-sub">Чек № ${o.num}</div>
+    <div class="r-sub">${formatPhone(o.phone)}</div>
+    <div class="r-line"></div>
+    ${o.items.map(i=>`<div class="r-item"><span>${i.qty}× ${esc(i.name)}</span><span>${i.price*i.qty} ₽</span></div>`).join('')}
+    <div class="r-line"></div>
+    <div class="r-item r-total"><span>ИТОГО</span><span>${o.total} ₽</span></div>
+    <div class="r-line"></div>
+    <div class="r-item"><span>Онлайн-заказ</span><span>Оплачено</span></div>
+    <div class="r-item"><span>${dateStr}</span><span></span></div>
+    <div class="r-thanks">Спасибо за заказ!</div>
+  `;
+}
+
+function openReceipt(o){
+  $('receipt').innerHTML = receiptHTML(o);
+  $('receipt-modal').classList.remove('hidden');
+}
+
+function openReceiptByKey(key){
+  const o = myOrders[key];
+  if(o) openReceipt(o);
+}
+
 Object.assign(window, {
+  login, logout, switchTab,
   addToCart, changeQty, removeItem,
-  openCart, closeCart, closeSuccess, placeOrder
+  openCart, closeCart, closeSuccess, closeReceipt, placeOrder,
+  openReceiptByKey
 });
+
+if(!myPhone) setTimeout(()=>$('phoneInput').focus(), 200);
 </script>
 </body>
 </html>
